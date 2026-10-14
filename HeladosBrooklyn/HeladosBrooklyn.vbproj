@@ -112,7 +112,7 @@
     </Compile>
     <Compile Include="NombreCategoria.vb" />
     <Compile Include="Opcional.vb" />
-    <Compile Include="Pestaña.vb" />
+    <Compile Include="Producto.vb" />
     <Compile Include="ProductoOpcional.vb" />
     <Compile Include="ProductoSabor.vb" />
     <Compile Include="Promocion.vb" />
