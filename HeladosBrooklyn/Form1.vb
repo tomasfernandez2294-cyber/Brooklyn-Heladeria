@@ -1,7 +1,7 @@
 ﻿Public Class PanelAdm
 
     Private categorias As New List(Of NombreCategoria)
-    Private productos As New List(Of Pestaña)
+    Private productos As New List(Of Producto)
     Private sabores As New List(Of Sabor)
     Private productosSabores As New List(Of ProductoSabor)
     Private metodosPago As New List(Of MetodoPago)
@@ -80,9 +80,9 @@
             Exit Sub
         End If
 
-        Dim producto As New Pestaña()
+        Dim producto As New Producto()
 
-        producto.IDPestaña = proximoIdProducto
+        producto.IDProducto = proximoIdProducto
         producto.NombreProducto = txtNombreProducto.Text
         producto.Descripcion = txtDescripcion.Text
         producto.Precio = CInt(txtPrecio.Text)
@@ -94,13 +94,13 @@
         For Each indice As Integer In clbSabores.CheckedIndices
             Dim productoSabor As New ProductoSabor()
 
-            productoSabor.IDProducto = producto.IDPestaña
+            productoSabor.IDProducto = producto.IDProducto
             productoSabor.IDSabor = sabores(indice).IDSabor
 
             productosSabores.Add(productoSabor)
         Next
 
-        lstProductos.Items.Add(producto.IDPestaña & " - " &
+        lstProductos.Items.Add(producto.IDProducto & " - " &
         producto.NombreProducto & " - $" &
         producto.Precio & " - Máx. " &
         producto.MaxSabores & " sabores")
@@ -120,7 +120,7 @@
     Private Sub lstProductos_SelectedIndexChanged(sender As Object, e As EventArgs) Handles lstProductos.SelectedIndexChanged
         If lstProductos.SelectedIndex >= 0 Then
 
-            Dim producto As Pestaña = productos(lstProductos.SelectedIndex)
+            Dim producto As Producto = productos(lstProductos.SelectedIndex)
 
             txtNombreProducto.Text = producto.NombreProducto
             txtDescripcion.Text = producto.Descripcion
@@ -137,7 +137,7 @@
             'Marcar los sabores asociados al producto
             For Each productoSabor As ProductoSabor In productosSabores
 
-                If productoSabor.IDProducto = producto.IDPestaña Then
+                If productoSabor.IDProducto = producto.IDProducto Then
 
                     For i As Integer = 0 To sabores.Count - 1
 
@@ -162,7 +162,7 @@
                 'Buscar si este producto tiene un precio específico
                 For Each productoOpcional As ProductoOpcional In productosOpcionales
 
-                    If productoOpcional.IDProducto = producto.IDPestaña AndAlso
+                    If productoOpcional.IDProducto = producto.IDProducto AndAlso
                    productoOpcional.IDOpcional = itemOpcional.IDOpcional Then
 
                         precioMostrar = productoOpcional.Precio
@@ -182,7 +182,7 @@
             'Marcar los opcionales asociados al producto
             For Each productoOpcional As ProductoOpcional In productosOpcionales
 
-                If productoOpcional.IDProducto = producto.IDPestaña Then
+                If productoOpcional.IDProducto = producto.IDProducto Then
 
                     For i As Integer = 0 To opcionales.Count - 1
 
@@ -645,7 +645,7 @@
         End If
 
         Dim indice As Integer = lstProductos.SelectedIndex
-        Dim producto As Pestaña = productos(indice)
+        Dim producto As Producto = productos(indice)
 
         producto.NombreProducto = txtNombreProducto.Text
         producto.Descripcion = txtDescripcion.Text
@@ -656,7 +656,7 @@
         'Actualizar sabores del producto
         For i As Integer = productosSabores.Count - 1 To 0 Step -1
 
-            If productosSabores(i).IDProducto = producto.IDPestaña Then
+            If productosSabores(i).IDProducto = producto.IDProducto Then
                 productosSabores.RemoveAt(i)
             End If
 
@@ -666,7 +666,7 @@
 
             Dim productoSabor As New ProductoSabor()
 
-            productoSabor.IDProducto = producto.IDPestaña
+            productoSabor.IDProducto = producto.IDProducto
             productoSabor.IDSabor = sabores(indiceSabor).IDSabor
 
             productosSabores.Add(productoSabor)
@@ -674,7 +674,7 @@
         Next
 
         lstProductos.Items(indice) =
-            producto.IDPestaña & " - " &
+            producto.IDProducto & " - " &
             producto.NombreProducto & " - $" &
             producto.Precio & " - Máx. " &
             producto.MaxSabores & " sabores"
@@ -689,7 +689,7 @@
         End If
 
         Dim indice As Integer = lstProductos.SelectedIndex
-        Dim producto As Pestaña = productos(indice)
+        Dim producto As Producto = productos(indice)
 
         Dim respuesta As DialogResult =
         MessageBox.Show(
@@ -704,7 +704,7 @@
             'Eliminar relaciones con sabores
             For i As Integer = productosSabores.Count - 1 To 0 Step -1
 
-                If productosSabores(i).IDProducto = producto.IDPestaña Then
+                If productosSabores(i).IDProducto = producto.IDProducto Then
                     productosSabores.RemoveAt(i)
                 End If
 
@@ -815,11 +815,11 @@
             'buscar si tiene un precio específico para este opcional
             If lstProductos.SelectedIndex >= 0 Then
 
-                Dim productoSeleccionado As Pestaña =
+                Dim productoSeleccionado As Producto =
                 productos(lstProductos.SelectedIndex)
 
                 For Each productoOpcional As ProductoOpcional In productosOpcionales
-                    If productoOpcional.IDProducto = productoSeleccionado.IDPestaña AndAlso
+                    If productoOpcional.IDProducto = productoSeleccionado.IDProducto AndAlso
                    productoOpcional.IDOpcional = itemOpcional.IDOpcional Then
 
                         precioMostrar = productoOpcional.Precio
@@ -841,7 +841,7 @@
             Exit Sub
         End If
 
-        Dim producto As Pestaña = productos(lstProductos.SelectedIndex)
+        Dim producto As Producto = productos(lstProductos.SelectedIndex)
         'Validar maximo de opcionales por grupo
         Dim cantidadesPorGrupo As New Dictionary(Of String, Integer)
         For Each indice As Integer In clbOpcionalesProducto.CheckedIndices
@@ -861,7 +861,7 @@
         Next
         'Eliminar asociaciones anteriores de este producto
         For i As Integer = productosOpcionales.Count - 1 To 0 Step -1
-            If productosOpcionales(i).IDProducto = producto.IDPestaña Then
+            If productosOpcionales(i).IDProducto = producto.IDProducto Then
                 productosOpcionales.RemoveAt(i)
             End If
         Next
@@ -873,7 +873,7 @@
 
             Dim productoOpcional As New ProductoOpcional()
 
-            productoOpcional.IDProducto = producto.IDPestaña
+            productoOpcional.IDProducto = producto.IDProducto
             productoOpcional.IDOpcional = opcional.IDOpcional
             productoOpcional.Precio = opcional.Precio
             productoOpcional.MaxSeleccion = CInt(nudMaxOpcionales.Value)
@@ -913,7 +913,7 @@
             Exit Sub
         End If
 
-        Dim producto As Pestaña = productos(lstProductos.SelectedIndex)
+        Dim producto As Producto = productos(lstProductos.SelectedIndex)
         Dim opcional As Opcional =
             opcionales(clbOpcionalesProducto.SelectedIndex)
 
@@ -921,7 +921,7 @@
 
         For Each productoOpcional As ProductoOpcional In productosOpcionales
 
-            If productoOpcional.IDProducto = producto.IDPestaña AndAlso
+            If productoOpcional.IDProducto = producto.IDProducto AndAlso
                productoOpcional.IDOpcional = opcional.IDOpcional Then
 
                 productoOpcional.Precio = precio

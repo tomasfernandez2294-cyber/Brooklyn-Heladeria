@@ -1,6 +1,6 @@
-﻿Public Class Pestaña
+﻿Public Class Producto
 
-    Public Property IDPestaña As Integer
+    Public Property IDProducto As Integer
     Public Property NombreProducto As String
     Public Property Descripcion As String
     Public Property Precio As Integer
