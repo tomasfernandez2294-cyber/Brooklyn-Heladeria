@@ -48,10 +48,23 @@
     <OptionInfer>On</OptionInfer>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="MySql.Data, Version=6.10.9.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
+      <HintPath>..\packages\MySql.Data.6.10.9\lib\net452\MySql.Data.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Drawing.Design" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Transactions" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
@@ -73,7 +86,41 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Cliente.vb" />
+    <Compile Include="clases\Carrito.vb" />
+    <Compile Include="clases\Categoria.vb" />
+    <Compile Include="clases\Clientes.vb" />
+    <Compile Include="clases\ConexionBD.vb" />
+    <Compile Include="clases\Cupon.vb" />
+    <Compile Include="clases\DetallePedido.vb" />
+    <Compile Include="clases\Direccion.vb" />
+    <Compile Include="clases\enum\EstadoPago.vb" />
+    <Compile Include="clases\enum\EstadoPedido.vb" />
+    <Compile Include="clases\GestorPedidos.vb" />
+    <Compile Include="clases\ItemCarrito.vb" />
+    <Compile Include="clases\MetodoEntrega.vb" />
+    <Compile Include="clases\MetodoPago.vb" />
+    <Compile Include="clases\NombreCategoria.vb" />
+    <Compile Include="clases\Opcional.vb" />
+    <Compile Include="clases\Pedido.vb" />
+    <Compile Include="clases\Pestaña.vb" />
+    <Compile Include="clases\Producto.vb" />
+    <Compile Include="clases\ProductoCategoria.vb" />
+    <Compile Include="clases\ProductoOpcional.vb" />
+    <Compile Include="clases\ProductoSabor.vb" />
+    <Compile Include="clases\Promocion.vb" />
+    <Compile Include="clases\Sabor.vb" />
+    <Compile Include="DAO\CarritoDAO.vb" />
+    <Compile Include="DAO\CategoriaDAO.vb" />
+    <Compile Include="DAO\ClienteDAO.vb" />
+    <Compile Include="DAO\CuponDAO.vb" />
+    <Compile Include="DAO\DireccionDAO.vb" />
+    <Compile Include="DAO\OpcionalDAO.vb" />
+    <Compile Include="DAO\PedidoDAO.vb" />
+    <Compile Include="DAO\ProductoCategoriaDAO.vb" />
+    <Compile Include="DAO\ProductoDAO.vb" />
+    <Compile Include="DAO\ProductoOpcionalDAO.vb" />
+    <Compile Include="DAO\ProductoSaborDAO.vb" />
+    <Compile Include="DAO\SaborDAO.vb" />
     <Compile Include="Form1.vb">
       <SubType>Form</SubType>
     </Compile>
@@ -93,8 +140,42 @@
     <Compile Include="FormMetodoPago.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="MetodoEntrega.vb" />
-    <Compile Include="MetodoPago.vb" />
+    <Compile Include="interfacezAdministrador\FormPedidos.Designer.vb">
+      <DependentUpon>FormPedidos.vb</DependentUpon>
+    </Compile>
+    <Compile Include="interfacezAdministrador\FormPedidos.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="interfacez\FormCarrito.Designer.vb">
+      <DependentUpon>FormCarrito.vb</DependentUpon>
+    </Compile>
+    <Compile Include="interfacez\FormCarrito.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="interfacez\FormCliente.Designer.vb">
+      <DependentUpon>FormCliente.vb</DependentUpon>
+    </Compile>
+    <Compile Include="interfacez\FormCliente.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="interfacez\FormMetodoEntregaCliente.Designer.vb">
+      <DependentUpon>FormMetodoEntregaCliente.vb</DependentUpon>
+    </Compile>
+    <Compile Include="interfacez\FormMetodoEntregaCliente.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="interfacez\FormMetodoPagoCliente.Designer.vb">
+      <DependentUpon>FormMetodoPagoCliente.vb</DependentUpon>
+    </Compile>
+    <Compile Include="interfacez\FormMetodoPagoCliente.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="interfacez\FormSaboresCliente.Designer.vb">
+      <DependentUpon>FormSaboresCliente.vb</DependentUpon>
+    </Compile>
+    <Compile Include="interfacez\FormSaboresCliente.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -110,13 +191,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="NombreCategoria.vb" />
-    <Compile Include="Opcional.vb" />
-    <Compile Include="Producto.vb" />
-    <Compile Include="ProductoOpcional.vb" />
-    <Compile Include="ProductoSabor.vb" />
-    <Compile Include="Promocion.vb" />
-    <Compile Include="Sabor.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Form1.resx">
@@ -127,6 +201,24 @@
     </EmbeddedResource>
     <EmbeddedResource Include="FormMetodoPago.resx">
       <DependentUpon>FormMetodoPago.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="interfacezAdministrador\FormPedidos.resx">
+      <DependentUpon>FormPedidos.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="interfacez\FormCarrito.resx">
+      <DependentUpon>FormCarrito.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="interfacez\FormCliente.resx">
+      <DependentUpon>FormCliente.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="interfacez\FormMetodoEntregaCliente.resx">
+      <DependentUpon>FormMetodoEntregaCliente.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="interfacez\FormMetodoPagoCliente.resx">
+      <DependentUpon>FormMetodoPagoCliente.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="interfacez\FormSaboresCliente.resx">
+      <DependentUpon>FormSaboresCliente.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="My Project\Resources.resx">
       <Generator>VbMyResourcesResXFileCodeGenerator</Generator>
@@ -146,6 +238,8 @@
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
     <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
 </Project>

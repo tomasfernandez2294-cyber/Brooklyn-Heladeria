@@ -2,6 +2,12 @@
 
     Private carritoActual As Carrito
 
+    'Constructor para el diseñador
+    Public Sub New()
+
+        InitializeComponent()
+
+    End Sub
 
     REM contructor de bpruba
     Public Sub New(carrito As Carrito)
@@ -33,12 +39,17 @@
 
             Next
 
-            dgvCarrito.Rows.Add(
+            'Agregar la fila y guardar su índice
+            Dim indiceFila As Integer = dgvCarrito.Rows.Add(
             item.producto.NombreProducto,
             saboresTexto,
             item.cantidad,
-            item.subtotal
+            item.subtotal,
+            item.NotaAdicional
         )
+
+            'Relacionar la fila con ESTE ItemCarrito
+            dgvCarrito.Rows(indiceFila).Tag = item
 
         Next
 
@@ -58,6 +69,42 @@
 
         formularioEntrega.Show()
         Me.Hide()
+
+    End Sub
+
+    REM boton eliminar 
+    Private Sub Button2_Click(sender As Object, e As EventArgs) Handles btnEliminar.Click
+
+        If dgvCarrito.CurrentRow Is Nothing Then
+            MessageBox.Show("Seleccione un producto del carrito.")
+            Exit Sub
+        End If
+
+        Dim itemSeleccionado As ItemCarrito =
+            CType(dgvCarrito.CurrentRow.Tag, ItemCarrito)
+
+        carritoActual.Items.Remove(itemSeleccionado)
+
+        CargarCarrito()
+
+    End Sub
+
+    REM editar carrito
+    Private Sub btnEditar_Click(sender As Object, e As EventArgs) Handles btnEditar.Click
+
+        If dgvCarrito.CurrentRow Is Nothing Then
+            MessageBox.Show("Seleccione un producto para editar.")
+            Exit Sub
+        End If
+
+        Dim itemSeleccionado As ItemCarrito =
+            CType(dgvCarrito.CurrentRow.Tag, ItemCarrito)
+
+        Dim ventana As New FormSaboresCliente(itemSeleccionado)
+
+        ventana.ShowDialog()
+
+        CargarCarrito()
 
     End Sub
 

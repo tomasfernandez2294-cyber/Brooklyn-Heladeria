@@ -93,17 +93,10 @@
         Dim productoSeleccionado As Producto =
         CType(boton.Tag, Producto)
 
-        'Crear item del carrito
-        Dim nuevoItem As New ItemCarrito()
+        'Abrir ventana para configurar el producto
+        Dim ventanaSabores As New FormSaboresCliente(productoSeleccionado, carritoActual)
 
-        nuevoItem.producto = productoSeleccionado
-        nuevoItem.cantidad = 1
-        nuevoItem.subtotal = CDbl(productoSeleccionado.Precio)
-
-        'Agregar al carrito actual
-        carritoActual.AgregarProducto(nuevoItem)
-
-        MessageBox.Show("Elegiste: " & productoSeleccionado.NombreProducto)
+        ventanaSabores.ShowDialog()
 
     End Sub
     Private Sub btnVerCarrito_Click(sender As Object, e As EventArgs) Handles btnVerCarrito.Click

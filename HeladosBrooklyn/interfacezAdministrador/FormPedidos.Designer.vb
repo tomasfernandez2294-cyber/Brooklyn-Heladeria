@@ -33,6 +33,7 @@ Partial Class FormPedidos
         Me.btnFinalizados = New System.Windows.Forms.Button()
         Me.btnVerPedido = New System.Windows.Forms.Button()
         Me.btnVolver = New System.Windows.Forms.Button()
+        Me.Button1 = New System.Windows.Forms.Button()
         CType(Me.dgvPedidos, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
@@ -42,7 +43,7 @@ Partial Class FormPedidos
         Me.dgvPedidos.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.NunPedidoCol, Me.FechaCol, Me.EntregaCol, Me.PagoCol, Me.TotalCol})
         Me.dgvPedidos.Location = New System.Drawing.Point(55, 122)
         Me.dgvPedidos.Name = "dgvPedidos"
-        Me.dgvPedidos.Size = New System.Drawing.Size(544, 150)
+        Me.dgvPedidos.Size = New System.Drawing.Size(642, 150)
         Me.dgvPedidos.TabIndex = 0
         '
         'NunPedidoCol
@@ -115,11 +116,21 @@ Partial Class FormPedidos
         Me.btnVolver.Text = "Volver"
         Me.btnVolver.UseVisualStyleBackColor = True
         '
+        'Button1
+        '
+        Me.Button1.Location = New System.Drawing.Point(367, 389)
+        Me.Button1.Name = "Button1"
+        Me.Button1.Size = New System.Drawing.Size(101, 23)
+        Me.Button1.TabIndex = 6
+        Me.Button1.Text = "hacer conexion"
+        Me.Button1.UseVisualStyleBackColor = True
+        '
         'FormPedidos
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(800, 450)
+        Me.Controls.Add(Me.Button1)
         Me.Controls.Add(Me.btnVolver)
         Me.Controls.Add(Me.btnVerPedido)
         Me.Controls.Add(Me.btnFinalizados)
@@ -137,11 +148,12 @@ Partial Class FormPedidos
     Friend WithEvents btnNuevo As Button
     Friend WithEvents btnPreparacion As Button
     Friend WithEvents btnFinalizados As Button
+    Friend WithEvents btnVerPedido As Button
+    Friend WithEvents btnVolver As Button
     Friend WithEvents NunPedidoCol As DataGridViewTextBoxColumn
     Friend WithEvents FechaCol As DataGridViewTextBoxColumn
     Friend WithEvents EntregaCol As DataGridViewTextBoxColumn
     Friend WithEvents PagoCol As DataGridViewTextBoxColumn
     Friend WithEvents TotalCol As DataGridViewTextBoxColumn
-    Friend WithEvents btnVerPedido As Button
-    Friend WithEvents btnVolver As Button
+    Friend WithEvents Button1 As Button
 End Class

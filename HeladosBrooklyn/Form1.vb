@@ -1,4 +1,5 @@
-﻿Public Class PanelAdm
+﻿Imports MySql.Data.MySqlClient
+Public Class PanelAdm
 
     Private categorias As New List(Of NombreCategoria)
     Private productos As New List(Of Producto)
@@ -37,6 +38,7 @@
     End Sub
 
     Private Sub btnAgregarCategoria_Click(sender As Object, e As EventArgs) Handles btnAgregarCategoria.Click
+
         If txtNombreCategoria.Text = "" Then
             MessageBox.Show("Ingrese un nombre de categoría")
             Exit Sub
@@ -44,12 +46,18 @@
 
         Dim categoria As New NombreCategoria()
         categoria.NombreCategoria = txtNombreCategoria.Text
+        categoria.Activo = True
 
-        categorias.Add(categoria)
+        If CategoriaDAO.Agregar(categoria) Then
 
-        lstCategorias.Items.Add(categoria.NombreCategoria)
-        cmbCategorias.Items.Add(categoria.NombreCategoria)
-        MessageBox.Show("Categoria agregada correctamente")
+            categorias.Add(categoria)
+
+            lstCategorias.Items.Add(categoria.NombreCategoria)
+            cmbCategorias.Items.Add(categoria.NombreCategoria)
+
+            MessageBox.Show("Categoría agregada correctamente")
+
+        End If
 
         txtNombreCategoria.Clear()
 
@@ -82,12 +90,44 @@
 
         Dim producto As New Producto()
 
-        producto.IDProducto = proximoIdProducto
+        'producto.IDProducto = proximoIdProducto
         producto.NombreProducto = txtNombreProducto.Text
         producto.Descripcion = txtDescripcion.Text
         producto.Precio = CInt(txtPrecio.Text)
         producto.Categoria = categorias(cmbCategorias.SelectedIndex)
         producto.MaxSabores = CInt(nudMaxSabores.Value)
+
+        'linea de mysql probamos
+        Try
+            Using conexion As MySqlConnection = ConexionBD.ObtenerConexion()
+
+                conexion.Open()
+
+                Dim sql As String =
+            "INSERT INTO PRODUCTO " &
+            "(nombre_producto, descripcion_producto, precio, max_sabores) " &
+            "VALUES (@nombre, @descripcion, @precio, @maxSabores);"
+
+                Using comando As New MySqlCommand(sql, conexion)
+
+                    comando.Parameters.AddWithValue("@nombre", producto.NombreProducto)
+                    comando.Parameters.AddWithValue("@descripcion", producto.Descripcion)
+                    comando.Parameters.AddWithValue("@precio", producto.Precio)
+                    comando.Parameters.AddWithValue("@maxSabores", producto.MaxSabores)
+
+                    comando.ExecuteNonQuery()
+
+                    'Tomamos el ID que generó MySQL
+                    producto.IDProducto = CInt(comando.LastInsertedId)
+
+                End Using
+            End Using
+
+        Catch ex As Exception
+            MessageBox.Show("Error al guardar producto en la base de datos: " &
+                    ex.Message)
+            Exit Sub
+        End Try
 
         productos.Add(producto)
 
@@ -104,7 +144,7 @@
         producto.NombreProducto & " - $" &
         producto.Precio & " - Máx. " &
         producto.MaxSabores & " sabores")
-        proximoIdProducto += 1
+        'proximoIdProducto += 1
         MessageBox.Show("Producto agregado correctamente")
 
         txtNombreProducto.Clear()
@@ -218,7 +258,11 @@
             MessageBox.Show("Ingrese el nombre del sabor")
             Exit Sub
         End If
-
+        ' posible correccion 
+        ' If String.IsNullOrWhiteSpace(txtNombreSabor.Text) Then
+        ' MessageBox.Show("Ingrese el nombre del sabor")
+        ' Exit Sub
+        ' End If
         Dim sabor As New Sabor()
 
         sabor.IDSabor = proximoIdSabor
@@ -965,6 +1009,20 @@
     "Cierre de pedidos: " & cierrePedidos & " minutos" & vbCrLf &
     "Tono: " & tonoNotificacion & vbCrLf &
     "Repetición: " & repeticionNotificacion)
+
+    End Sub
+
+    Private Sub btnPedidos_Click(sender As Object, e As EventArgs) Handles btnPedidos.Click
+
+        Dim frm As New FormPedidos()
+        frm.Show()
+
+    End Sub
+
+    Private Sub btnVerCliente_Click(sender As Object, e As EventArgs) Handles btnVerCliente.Click
+
+        Dim frm As New FormCliente()
+        frm.Show()
 
     End Sub
 End Class

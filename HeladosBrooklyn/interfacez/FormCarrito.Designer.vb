@@ -31,16 +31,19 @@ Partial Class FormCarrito
         Me.btnContinuarPedido = New System.Windows.Forms.Button()
         Me.Label2 = New System.Windows.Forms.Label()
         Me.btnVolver = New System.Windows.Forms.Button()
+        Me.btnEditar = New System.Windows.Forms.Button()
+        Me.btnEliminar = New System.Windows.Forms.Button()
+        Me.NotaCol = New System.Windows.Forms.DataGridViewTextBoxColumn()
         CType(Me.dgvCarrito, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'dgvCarrito
         '
         Me.dgvCarrito.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        Me.dgvCarrito.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.ProductoCol, Me.SaboresCol, Me.CantidadCol, Me.SubtotalCol})
+        Me.dgvCarrito.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.ProductoCol, Me.SaboresCol, Me.CantidadCol, Me.SubtotalCol, Me.NotaCol})
         Me.dgvCarrito.Location = New System.Drawing.Point(58, 22)
         Me.dgvCarrito.Name = "dgvCarrito"
-        Me.dgvCarrito.Size = New System.Drawing.Size(445, 150)
+        Me.dgvCarrito.Size = New System.Drawing.Size(545, 150)
         Me.dgvCarrito.TabIndex = 0
         '
         'ProductoCol
@@ -99,11 +102,36 @@ Partial Class FormCarrito
         Me.btnVolver.Text = "Volver"
         Me.btnVolver.UseVisualStyleBackColor = True
         '
+        'btnEditar
+        '
+        Me.btnEditar.Location = New System.Drawing.Point(58, 178)
+        Me.btnEditar.Name = "btnEditar"
+        Me.btnEditar.Size = New System.Drawing.Size(75, 23)
+        Me.btnEditar.TabIndex = 6
+        Me.btnEditar.Text = "Editar"
+        Me.btnEditar.UseVisualStyleBackColor = True
+        '
+        'btnEliminar
+        '
+        Me.btnEliminar.Location = New System.Drawing.Point(149, 178)
+        Me.btnEliminar.Name = "btnEliminar"
+        Me.btnEliminar.Size = New System.Drawing.Size(75, 23)
+        Me.btnEliminar.TabIndex = 7
+        Me.btnEliminar.Text = "Eliminar"
+        Me.btnEliminar.UseVisualStyleBackColor = True
+        '
+        'NotaCol
+        '
+        Me.NotaCol.HeaderText = "Nota"
+        Me.NotaCol.Name = "NotaCol"
+        '
         'FormCarrito
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(800, 450)
+        Me.Controls.Add(Me.btnEliminar)
+        Me.Controls.Add(Me.btnEditar)
         Me.Controls.Add(Me.btnVolver)
         Me.Controls.Add(Me.Label2)
         Me.Controls.Add(Me.btnContinuarPedido)
@@ -126,4 +154,7 @@ Partial Class FormCarrito
     Friend WithEvents CantidadCol As DataGridViewTextBoxColumn
     Friend WithEvents SubtotalCol As DataGridViewTextBoxColumn
     Friend WithEvents btnVolver As Button
+    Friend WithEvents btnEditar As Button
+    Friend WithEvents btnEliminar As Button
+    Friend WithEvents NotaCol As DataGridViewTextBoxColumn
 End Class
