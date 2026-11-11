@@ -19,7 +19,8 @@
     End Sub
 
 
-    ' Botón Confirmar Pedido
+
+    ' BOTÓN CONFIRMAR PEDIDO
     Private Sub btnConfirmar_Click(sender As Object, e As EventArgs) Handles btnConfirmar.Click
 
         ' Validar método de pago
@@ -31,7 +32,6 @@
             Exit Sub
 
         End If
-
 
         ' Crear método de pago seleccionado
         Dim metodoPagoSeleccionado As New MetodoPago()
@@ -58,42 +58,74 @@
 
         metodoPagoSeleccionado.Habilitado = True
 
+        ' Crear cliente de prueba
+        ' SOLO PARA LA DEMOSTRACIÓN LOCAL
+        Dim clientePrueba As New Cliente()
+        clientePrueba.IDCliente = 1
 
-        ' Crear el pedido
+        ' Crear pedido
         Dim nuevoPedido As New Pedido()
 
-        nuevoPedido.id = GestorPedidos.Pedidos.Count + 1
-        nuevoPedido.NumeroPedido = "PED-" & nuevoPedido.id.ToString("0000")
+        nuevoPedido.NumeroPedido =
+        "PED-" & Guid.NewGuid().ToString("N").Substring(0, 12).ToUpper()
 
+        nuevoPedido.Cliente = clientePrueba
         nuevoPedido.Carrito = carritoActual
         nuevoPedido.MetodoEntrega = metodoEntregaSeleccionado
         nuevoPedido.MetodoPago = metodoPagoSeleccionado
 
         nuevoPedido.subTotal = carritoActual.CalcularTotal()
-        nuevoPedido.total = carritoActual.CalcularTotal()
+        nuevoPedido.total = carritoActual.CalcularTotalFinal()
 
         nuevoPedido.fechaPedido = Date.Now
 
+        nuevoPedido.estadoPedido = EstadoPedido.Nuevo
+        nuevoPedido.estadoPago = EstadoPago.Pendiente
 
-        ' Guardar pedido
-        GestorPedidos.AgregarPedido(nuevoPedido)
+        ' Guardar en MySQL
+        Try
 
+            If PedidoDAO.Agregar(nuevoPedido) Then
 
-        MessageBox.Show(
-        "Pedido " & nuevoPedido.NumeroPedido &
-        " confirmado correctamente."
-    )
+                GestorPedidos.AgregarPedido(nuevoPedido)
+
+                MessageBox.Show(
+                "Pedido " & nuevoPedido.NumeroPedido &
+                " guardado correctamente en MySQL.",
+                "Pedido confirmado",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information)
+
+                Me.DialogResult = DialogResult.OK
+                Me.Close()
+
+            Else
+
+                MessageBox.Show("No se pudo guardar el pedido.")
+
+            End If
+
+        Catch ex As Exception
+
+            MessageBox.Show(
+            "Error al guardar el pedido: " & ex.Message,
+            "Error de MySQL",
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Error)
+
+        End Try
 
     End Sub
 
 
-    ' Botón Volver
-    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles btnVolver.Click
 
-        ' Volvemos a Entrega pasando el MISMO carrito
-        Dim formularioEntrega As New FormMetodoEntregaCliente(carritoActual)
+    ' BOTÓN VOLVER
+    Private Sub Button1_Click(
+    sender As Object,
+    e As EventArgs
+) Handles btnVolver.Click
 
-        formularioEntrega.Show()
+        Me.DialogResult = DialogResult.Cancel
         Me.Close()
 
     End Sub

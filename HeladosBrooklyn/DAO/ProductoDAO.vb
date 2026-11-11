@@ -15,11 +15,11 @@ Public Class ProductoDAO
                 Dim sql As String =
                     "INSERT INTO PRODUCTO " &
                     "(nombre_producto, descripcion_producto, orden, " &
-                    "precio, activo_producto, imagen, max_marcrote, " &
+                    "precio, activo_producto, imagen, max_marrocote, " &
                     "max_sabores, max_salsas, permitir_notas) " &
-                    "VALUES (@nombre, @descripcion, @orden, " &
-                    "@precio, @activo, @imagen, @maxMarrocotes, " &
-                    "@maxSabores, @maxSalsas, @permitirNotas)"
+                    "VALUES (@nombre, @descripcion_producto, @orden, " &
+                    "@precio, @activo_producto, @imagen, @max_marrocote, " &
+                    "@max_sabores, @max_salsas, @permitir_notas)"
 
                 Using cmd As New MySqlCommand(sql, conexion)
 
@@ -56,7 +56,7 @@ Public Class ProductoDAO
             Dim sql As String =
                 "SELECT id_producto, nombre_producto, " &
                 "descripcion_producto, orden, precio, " &
-                "activo_producto, imagen, max_marcrote, " &
+                "activo_producto, imagen, max_marrocote, " &
                 "max_sabores, max_salsas, permitir_notas " &
                 "FROM PRODUCTO ORDER BY orden, nombre_producto"
 
@@ -87,7 +87,7 @@ Public Class ProductoDAO
             Dim sql As String =
                 "SELECT id_producto, nombre_producto, " &
                 "descripcion_producto, orden, precio, " &
-                "activo_producto, imagen, max_marcrote, " &
+                "activo_producto, imagen, max_marrocote, " &
                 "max_sabores, max_salsas, permitir_notas " &
                 "FROM PRODUCTO WHERE id_producto = @id"
 
@@ -121,15 +121,15 @@ Public Class ProductoDAO
             Dim sql As String =
                 "UPDATE PRODUCTO SET " &
                 "nombre_producto = @nombre, " &
-                "descripcion_producto = @descripcion, " &
+                "descripcion_producto = @descripcion_producto, " &
                 "orden = @orden, " &
                 "precio = @precio, " &
-                "activo_producto = @activo, " &
+                "activo_producto = @activo_producto, " &
                 "imagen = @imagen, " &
-                "max_marcrote = @maxMarrocotes, " &
-                "max_sabores = @maxSabores, " &
-                "max_salsas = @maxSalsas, " &
-                "permitir_notas = @permitirNotas " &
+                "max_marrocote = @max_marrocote, " &
+                "max_sabores = @max_sabores, " &
+                "max_salsas = @max_salsas, " &
+                "permitir_notas = @permitir_notas " &
                 "WHERE id_producto = @id"
 
             Using cmd As New MySqlCommand(sql, conexion)
@@ -206,7 +206,7 @@ Public Class ProductoDAO
             "@nombre", producto.NombreProducto)
 
         cmd.Parameters.AddWithValue(
-            "@descripcion",
+            "@descripcion_producto",
             If(producto.Descripcion Is Nothing,
                CType(DBNull.Value, Object),
                producto.Descripcion))
@@ -218,7 +218,7 @@ Public Class ProductoDAO
             "@precio", producto.Precio)
 
         cmd.Parameters.AddWithValue(
-            "@activo", producto.Activo)
+            "@activo_producto", producto.Activo)
 
         cmd.Parameters.AddWithValue(
             "@imagen",
@@ -227,16 +227,16 @@ Public Class ProductoDAO
                producto.Imagen))
 
         cmd.Parameters.AddWithValue(
-            "@maxMarrocotes", producto.MaxMarrocotes)
+            "@max_marrocote", producto.MaxMarrocotes)
 
         cmd.Parameters.AddWithValue(
-            "@maxSabores", producto.MaxSabores)
+            "@max_sabores", producto.MaxSabores)
 
         cmd.Parameters.AddWithValue(
-            "@maxSalsas", producto.MaxSalsas)
+            "@max_salsas", producto.MaxSalsas)
 
         cmd.Parameters.AddWithValue(
-            "@permitirNotas", producto.PermitirNotas)
+            "@permitir_notas", producto.PermitirNotas)
 
     End Sub
 
@@ -273,7 +273,7 @@ Public Class ProductoDAO
                Convert.ToString(reader("imagen")))
 
         producto.MaxMarrocotes =
-            Convert.ToInt32(reader("max_marcrote"))
+            Convert.ToInt32(reader("max_marrocote"))
 
         producto.MaxSabores =
             Convert.ToInt32(reader("max_sabores"))

@@ -6,29 +6,157 @@ Public Class PedidoDAO
     ' ==========================================
     ' AGREGAR PEDIDO
     ' ==========================================
+
     Public Shared Function Agregar(pedido As Pedido) As Boolean
 
+        If pedido Is Nothing OrElse pedido.Carrito Is Nothing Then
+            Throw New Exception("El pedido no tiene carrito.")
+        End If
+
+        If pedido.Cliente Is Nothing OrElse
+       pedido.Cliente.IDCliente <= 0 Then
+            Throw New Exception("Falta identificar al cliente.")
+        End If
+
+        If pedido.MetodoEntrega Is Nothing Then
+            Throw New Exception("Falta el método de entrega.")
+        End If
+
         Using conexion As MySqlConnection = ConexionBD.ObtenerConexion()
+
             conexion.Open()
 
-            Dim sql As String =
-                "INSERT INTO PEDIDO " &
-                "(numero_pedido, fecha_pedido, subtotal, total, " &
-                "estado_pedido, estado_pago) " &
-                "VALUES (@numero, @fecha, @subtotal, @total, " &
-                "@estadoPedido, @estadoPago)"
+            Using transaccion As MySqlTransaction =
+            conexion.BeginTransaction()
 
-            Using cmd As New MySqlCommand(sql, conexion)
+                Try
+                    ' 1. GUARDAR PEDIDO
+                    Dim sqlPedido As String =
+                    "INSERT INTO pedido " &
+                    "(id_cliente, id_metodo_entrega, numero_pedido, " &
+                    "fecha_pedido, estado_pedido, estado_pago, " &
+                    "monto_descuento, total) " &
+                    "VALUES (@cliente, @entrega, @numero, " &
+                    "@fecha, @estado, @pago, @descuento, @total)"
 
-                CargarParametros(cmd, pedido)
+                    Dim idPedido As Long
 
-                cmd.ExecuteNonQuery()
+                    Using cmd As New MySqlCommand(
+                    sqlPedido, conexion, transaccion)
 
-                pedido.id = Convert.ToInt32(cmd.LastInsertedId)
+                        cmd.Parameters.AddWithValue(
+                        "@cliente", pedido.Cliente.IDCliente)
 
-                Return True
+                        cmd.Parameters.AddWithValue(
+                        "@entrega",
+                        pedido.MetodoEntrega.IDMetodoEntrega)
+
+                        cmd.Parameters.AddWithValue(
+                        "@numero", pedido.NumeroPedido)
+
+                        cmd.Parameters.AddWithValue(
+                        "@fecha", pedido.fechaPedido)
+
+                        cmd.Parameters.AddWithValue(
+                        "@estado", pedido.estadoPedido.ToString())
+
+                        cmd.Parameters.AddWithValue(
+                        "@pago", pedido.estadoPago.ToString())
+
+                        cmd.Parameters.AddWithValue(
+                        "@descuento",
+                        pedido.Carrito.CalcularDescuento())
+
+                        cmd.Parameters.AddWithValue(
+                        "@total", pedido.total)
+
+                        cmd.ExecuteNonQuery()
+
+                        idPedido = cmd.LastInsertedId
+
+                    End Using
+
+                    ' 2. GUARDAR PRODUCTOS
+                    For Each item As ItemCarrito In pedido.Carrito.Items
+
+                        Dim sqlDetalle As String =
+                        "INSERT INTO detalle_pedido " &
+                        "(id_pedido, id_producto, cantidad, " &
+                        "precio_unitario, nota_adicional) " &
+                        "VALUES (@pedido, @producto, @cantidad, " &
+                        "@precio, @nota)"
+
+                        Dim idDetalle As Long
+
+                        Using cmd As New MySqlCommand(
+                        sqlDetalle, conexion, transaccion)
+
+                            cmd.Parameters.AddWithValue(
+                            "@pedido", idPedido)
+
+                            cmd.Parameters.AddWithValue(
+                            "@producto", item.producto.IDProducto)
+
+                            cmd.Parameters.AddWithValue(
+                            "@cantidad", item.cantidad)
+
+                            cmd.Parameters.AddWithValue(
+                            "@precio",
+                            Convert.ToDecimal(item.subtotal) /
+                            item.cantidad)
+
+                            cmd.Parameters.AddWithValue(
+                            "@nota",
+                            If(item.NotaAdicional, ""))
+
+                            cmd.ExecuteNonQuery()
+
+                            idDetalle = cmd.LastInsertedId
+
+                        End Using
+
+                        ' 3. GUARDAR SABORES
+                        If item.SaboresSeleccionados IsNot Nothing Then
+
+                            For Each sabor As Sabor In item.SaboresSeleccionados
+
+                                Dim sqlSabor As String =
+                                "INSERT INTO detalle_pedido_sabor " &
+                                "(id_detalle_pedido, id_sabor) " &
+                                "VALUES (@detalle, @sabor)"
+
+                                Using cmd As New MySqlCommand(
+                                sqlSabor, conexion, transaccion)
+
+                                    cmd.Parameters.AddWithValue(
+                                    "@detalle", idDetalle)
+
+                                    cmd.Parameters.AddWithValue(
+                                    "@sabor", sabor.IDSabor)
+
+                                    cmd.ExecuteNonQuery()
+
+                                End Using
+
+                            Next
+
+                        End If
+
+                    Next
+
+                    transaccion.Commit()
+
+                    pedido.id = Convert.ToInt32(idPedido)
+
+                    Return True
+
+                Catch
+                    transaccion.Rollback()
+                    Throw
+                End Try
 
             End Using
+
         End Using
 
     End Function
@@ -41,22 +169,30 @@ Public Class PedidoDAO
 
         Dim pedidos As New List(Of Pedido)()
 
-        Using conexion As MySqlConnection = ConexionBD.ObtenerConexion()
+        Using conexion As MySqlConnection =
+            ConexionBD.ObtenerConexion()
+
             conexion.Open()
 
             Dim sql As String =
-                "SELECT id_pedido, numero_pedido, fecha_pedido, " &
-                "subtotal, total, estado_pedido, estado_pago " &
-                "FROM PEDIDO ORDER BY fecha_pedido DESC"
+                "SELECT id_pedido, numero_pedido, " &
+                "fecha_pedido, total, monto_descuento, " &
+                "costo_envio_congelado, " &
+                "estado_pedido, estado_pago " &
+                "FROM pedido " &
+                "ORDER BY fecha_pedido DESC"
 
             Using cmd As New MySqlCommand(sql, conexion)
-                Using reader As MySqlDataReader = cmd.ExecuteReader()
+
+                Using reader As MySqlDataReader =
+                    cmd.ExecuteReader()
 
                     While reader.Read()
                         pedidos.Add(MapearPedido(reader))
                     End While
 
                 End Using
+
             End Using
         End Using
 
@@ -66,29 +202,36 @@ Public Class PedidoDAO
 
 
     ' ==========================================
-    ' BUSCAR PEDIDO POR ID
+    ' BUSCAR POR ID
     ' ==========================================
-    Public Shared Function BuscarPorID(id As Integer) As Pedido
+    Public Shared Function BuscarPorID(
+        id As Integer) As Pedido
 
-        Using conexion As MySqlConnection = ConexionBD.ObtenerConexion()
+        Using conexion As MySqlConnection =
+            ConexionBD.ObtenerConexion()
+
             conexion.Open()
 
             Dim sql As String =
-                "SELECT id_pedido, numero_pedido, fecha_pedido, " &
-                "subtotal, total, estado_pedido, estado_pago " &
-                "FROM PEDIDO WHERE id_pedido = @id"
+                "SELECT id_pedido, numero_pedido, " &
+                "fecha_pedido, total, monto_descuento, " &
+                "costo_envio_congelado, " &
+                "estado_pedido, estado_pago " &
+                "FROM pedido WHERE id_pedido = @id"
 
             Using cmd As New MySqlCommand(sql, conexion)
 
                 cmd.Parameters.AddWithValue("@id", id)
 
-                Using reader As MySqlDataReader = cmd.ExecuteReader()
+                Using reader As MySqlDataReader =
+                    cmd.ExecuteReader()
 
                     If reader.Read() Then
                         Return MapearPedido(reader)
                     End If
 
                 End Using
+
             End Using
         End Using
 
@@ -98,29 +241,38 @@ Public Class PedidoDAO
 
 
     ' ==========================================
-    ' BUSCAR PEDIDO POR NUMERO
+    ' BUSCAR POR NUMERO
     ' ==========================================
-    Public Shared Function BuscarPorNumero(numero As String) As Pedido
+    Public Shared Function BuscarPorNumero(
+        numero As String) As Pedido
 
-        Using conexion As MySqlConnection = ConexionBD.ObtenerConexion()
+        Using conexion As MySqlConnection =
+            ConexionBD.ObtenerConexion()
+
             conexion.Open()
 
             Dim sql As String =
-                "SELECT id_pedido, numero_pedido, fecha_pedido, " &
-                "subtotal, total, estado_pedido, estado_pago " &
-                "FROM PEDIDO WHERE numero_pedido = @numero LIMIT 1"
+                "SELECT id_pedido, numero_pedido, " &
+                "fecha_pedido, total, monto_descuento, " &
+                "costo_envio_congelado, " &
+                "estado_pedido, estado_pago " &
+                "FROM pedido " &
+                "WHERE numero_pedido = @numero LIMIT 1"
 
             Using cmd As New MySqlCommand(sql, conexion)
 
-                cmd.Parameters.AddWithValue("@numero", numero)
+                cmd.Parameters.AddWithValue(
+                    "@numero", numero)
 
-                Using reader As MySqlDataReader = cmd.ExecuteReader()
+                Using reader As MySqlDataReader =
+                    cmd.ExecuteReader()
 
                     If reader.Read() Then
                         Return MapearPedido(reader)
                     End If
 
                 End Using
+
             End Using
         End Using
 
@@ -132,16 +284,18 @@ Public Class PedidoDAO
     ' ==========================================
     ' MODIFICAR PEDIDO
     ' ==========================================
-    Public Shared Function Modificar(pedido As Pedido) As Boolean
+    Public Shared Function Modificar(
+        pedido As Pedido) As Boolean
 
-        Using conexion As MySqlConnection = ConexionBD.ObtenerConexion()
+        Using conexion As MySqlConnection =
+            ConexionBD.ObtenerConexion()
+
             conexion.Open()
 
             Dim sql As String =
-                "UPDATE PEDIDO SET " &
+                "UPDATE pedido SET " &
                 "numero_pedido = @numero, " &
                 "fecha_pedido = @fecha, " &
-                "subtotal = @subtotal, " &
                 "total = @total, " &
                 "estado_pedido = @estadoPedido, " &
                 "estado_pago = @estadoPago " &
@@ -149,8 +303,26 @@ Public Class PedidoDAO
 
             Using cmd As New MySqlCommand(sql, conexion)
 
-                CargarParametros(cmd, pedido)
-                cmd.Parameters.AddWithValue("@id", pedido.id)
+                cmd.Parameters.AddWithValue(
+                    "@numero", pedido.NumeroPedido)
+
+                cmd.Parameters.AddWithValue(
+                    "@fecha", pedido.fechaPedido)
+
+                cmd.Parameters.AddWithValue(
+                    "@total",
+                    Convert.ToDecimal(pedido.total))
+
+                cmd.Parameters.AddWithValue(
+                    "@estadoPedido",
+                    pedido.estadoPedido.ToString())
+
+                cmd.Parameters.AddWithValue(
+                    "@estadoPago",
+                    pedido.estadoPago.ToString())
+
+                cmd.Parameters.AddWithValue(
+                    "@id", pedido.id)
 
                 Return cmd.ExecuteNonQuery() > 0
 
@@ -167,11 +339,14 @@ Public Class PedidoDAO
         id As Integer,
         nuevoEstado As EstadoPedido) As Boolean
 
-        Using conexion As MySqlConnection = ConexionBD.ObtenerConexion()
+        Using conexion As MySqlConnection =
+            ConexionBD.ObtenerConexion()
+
             conexion.Open()
 
             Dim sql As String =
-                "UPDATE PEDIDO SET estado_pedido = @estado " &
+                "UPDATE pedido " &
+                "SET estado_pedido = @estado " &
                 "WHERE id_pedido = @id"
 
             Using cmd As New MySqlCommand(sql, conexion)
@@ -196,11 +371,14 @@ Public Class PedidoDAO
         id As Integer,
         nuevoEstado As EstadoPago) As Boolean
 
-        Using conexion As MySqlConnection = ConexionBD.ObtenerConexion()
+        Using conexion As MySqlConnection =
+            ConexionBD.ObtenerConexion()
+
             conexion.Open()
 
             Dim sql As String =
-                "UPDATE PEDIDO SET estado_pago = @estado " &
+                "UPDATE pedido " &
+                "SET estado_pago = @estado " &
                 "WHERE id_pedido = @id"
 
             Using cmd As New MySqlCommand(sql, conexion)
@@ -221,67 +399,25 @@ Public Class PedidoDAO
     ' ==========================================
     ' CANCELAR PEDIDO
     ' ==========================================
-    Public Shared Function Cancelar(id As Integer) As Boolean
+    Public Shared Function Cancelar(
+        id As Integer) As Boolean
 
-        Using conexion As MySqlConnection = ConexionBD.ObtenerConexion()
-            conexion.Open()
-
-            Dim sql As String =
-                "UPDATE PEDIDO SET estado_pedido = @estado " &
-                "WHERE id_pedido = @id"
-
-            Using cmd As New MySqlCommand(sql, conexion)
-
-                cmd.Parameters.AddWithValue(
-                    "@estado", EstadoPedido.Cancelado.ToString())
-
-                cmd.Parameters.AddWithValue("@id", id)
-
-                Return cmd.ExecuteNonQuery() > 0
-
-            End Using
-        End Using
+        Return CambiarEstadoPedido(
+            id, EstadoPedido.Cancelado)
 
     End Function
 
 
     ' ==========================================
-    ' CARGAR PARAMETROS SQL
-    ' ==========================================
-    Private Shared Sub CargarParametros(
-        cmd As MySqlCommand,
-        pedido As Pedido)
-
-        cmd.Parameters.AddWithValue(
-            "@numero", pedido.NumeroPedido)
-
-        cmd.Parameters.AddWithValue(
-            "@fecha", pedido.fechaPedido)
-
-        cmd.Parameters.AddWithValue(
-            "@subtotal", Convert.ToDecimal(pedido.subTotal))
-
-        cmd.Parameters.AddWithValue(
-            "@total", Convert.ToDecimal(pedido.total))
-
-        cmd.Parameters.AddWithValue(
-            "@estadoPedido", pedido.estadoPedido.ToString())
-
-        cmd.Parameters.AddWithValue(
-            "@estadoPago", pedido.estadoPago.ToString())
-
-    End Sub
-
-
-    ' ==========================================
-    ' CONVERTIR REGISTRO MYSQL A PEDIDO
+    ' MAPEAR REGISTRO MYSQL A PEDIDO
     ' ==========================================
     Private Shared Function MapearPedido(
         reader As MySqlDataReader) As Pedido
 
         Dim pedido As New Pedido()
 
-        pedido.id = Convert.ToInt32(reader("id_pedido"))
+        pedido.id =
+            Convert.ToInt32(reader("id_pedido"))
 
         pedido.NumeroPedido =
             Convert.ToString(reader("numero_pedido"))
@@ -289,11 +425,21 @@ Public Class PedidoDAO
         pedido.fechaPedido =
             Convert.ToDateTime(reader("fecha_pedido"))
 
-        pedido.subTotal =
-            Convert.ToDouble(reader("subtotal"))
-
         pedido.total =
             Convert.ToDouble(reader("total"))
+
+        ' Calcular subtotal a partir de los
+        ' campos existentes en MySQL
+        Dim descuento As Decimal =
+            Convert.ToDecimal(reader("monto_descuento"))
+
+        Dim costoEnvio As Decimal =
+            Convert.ToDecimal(reader("costo_envio_congelado"))
+
+        pedido.subTotal =
+            Convert.ToDouble(
+                Convert.ToDecimal(pedido.total) +
+                descuento - costoEnvio)
 
         pedido.estadoPedido =
             CType([Enum].Parse(

@@ -6,50 +6,54 @@
     REM load
     Private Sub FormCliente_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
-        Dim producto1 As New Producto()
-
-        producto1.IDProducto = 1
-        producto1.NombreProducto = "1 Kilo de Helado"
-        producto1.Descripcion = "Hasta 2 sabores"
-        producto1.Precio = 18000D
-        producto1.Activo = True
-        producto1.Orden = 1
-        producto1.MaxSabores = 2
-
-
-        Dim producto2 As New Producto()
-
-        producto2.IDProducto = 2
-        producto2.NombreProducto = "1/2 Kilo de Helado"
-        producto2.Descripcion = "Hasta 2 sabores"
-        producto2.Precio = 11000D
-        producto2.Activo = True
-        producto2.Orden = 2
-        producto2.MaxSabores = 2
-
-
-        Dim producto3 As New Producto()
-
-        producto3.IDProducto = 3
-        producto3.NombreProducto = "1/4 Kilo de Helado"
-        producto3.Descripcion = "Hasta 2 sabores"
-        producto3.Precio = 7000D
-        producto3.Activo = True
-        producto3.Orden = 3
-        producto3.MaxSabores = 2
-
-        productos.Add(producto1)
-        productos.Add(producto2)
-        productos.Add(producto3)
-
+        CargarProductosDesdeBD()
         MostrarProductos()
 
     End Sub
+
+    ' CARGAR PRODUCTOS Y SABORES DESDE MYSQL
+    Private Sub CargarProductosDesdeBD()
+
+        Try
+            productos.Clear()
+
+            Dim productosBD As List(Of Producto) =
+            ProductoDAO.Listar()
+
+            For Each producto As Producto In productosBD
+
+                If producto.Activo Then
+
+                    ' Obtener sabores asociados al producto
+                    producto.Sabores =
+                    SaborDAO.ListarPorProducto(producto.IDProducto)
+
+                    productos.Add(producto)
+
+                End If
+
+            Next
+
+        Catch ex As Exception
+
+            MessageBox.Show(
+            "Error al cargar productos y sabores: " &
+            ex.Message)
+
+        End Try
+
+    End Sub
+
 
     REM procedimiento para mostrar objetos OJO
     Private Sub MostrarProductos()
 
         flpProductos.Controls.Clear()
+
+        ' Configuración del contenedor
+        flpProductos.FlowDirection = FlowDirection.TopDown
+        flpProductos.WrapContents = False
+        flpProductos.AutoScroll = True
 
         For Each producto As Producto In productos
 
@@ -99,6 +103,8 @@
         ventanaSabores.ShowDialog()
 
     End Sub
+
+    'boton ver carrito
     Private Sub btnVerCarrito_Click(sender As Object, e As EventArgs) Handles btnVerCarrito.Click
 
         Dim formularioCarrito As New FormCarrito(carritoActual)
@@ -109,6 +115,7 @@
 
     End Sub
 
+    'boton registrarse
     Private Sub btnRegistrarse_Click(sender As Object, e As EventArgs) Handles btnRegistrarse.Click
 
         Using formulario As New FormRegistroCliente()

@@ -22,6 +22,7 @@ Partial Class FormCliente
     'No lo modifique con el editor de código.
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
+        Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(FormCliente))
         Me.flpContenido = New System.Windows.Forms.FlowLayoutPanel()
         Me.pnlCabecera = New System.Windows.Forms.Panel()
         Me.picPortada = New System.Windows.Forms.PictureBox()
@@ -70,6 +71,7 @@ Partial Class FormCliente
         'picPortada
         '
         Me.picPortada.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.picPortada.Image = CType(resources.GetObject("picPortada.Image"), System.Drawing.Image)
         Me.picPortada.Location = New System.Drawing.Point(0, 0)
         Me.picPortada.Name = "picPortada"
         Me.picPortada.Size = New System.Drawing.Size(317, 156)

@@ -24,6 +24,60 @@ Public Class PanelAdm
     Private proximoIdOpcional As Integer = 1
     Private repeticionNotificacion As Integer = 2
 
+    ' CARGAR PRODUCTOS DESDE MYSQL
+    Private Sub CargarProductosDesdeBD()
+
+        Dim productosBD As List(Of Producto) =
+        ProductoDAO.Listar()
+
+        productos.Clear()
+        lstProductos.Items.Clear()
+
+        For Each producto As Producto In productosBD
+
+            If producto.Activo Then
+
+                productos.Add(producto)
+
+                lstProductos.Items.Add(
+                producto.NombreProducto)
+
+            End If
+
+        Next
+
+    End Sub
+
+    'metodo para las categorias de la DB
+    Private Sub CargarCategoriasDesdeBD()
+
+        Dim categoriasBD As List(Of NombreCategoria) =
+        CategoriaDAO.Listar()
+
+        categorias.Clear()
+        lstCategorias.Items.Clear()
+        clbCategorias.Items.Clear()
+
+        For Each categoria As NombreCategoria In categoriasBD
+
+            If categoria.Activo Then
+
+                categorias.Add(categoria)
+
+                lstCategorias.Items.Add(
+                categoria.NombreCategoria)
+
+                clbCategorias.Items.Add(
+                categoria.NombreCategoria)
+
+            End If
+
+        Next
+
+    End Sub
+
+
+    'boton categoria
     Private Sub btnCategorias_Click(sender As Object, e As EventArgs) Handles btnCategorias.Click
 
         pnlCategorias.Visible = True
@@ -37,15 +91,20 @@ Public Class PanelAdm
         lblSeccion.Text = "Gestión de Categorías"
     End Sub
 
+
+    ' BOTÓN AGREGAR CATEGORÍA
     Private Sub btnAgregarCategoria_Click(sender As Object, e As EventArgs) Handles btnAgregarCategoria.Click
 
-        If txtNombreCategoria.Text = "" Then
+        Dim nombre As String = txtNombreCategoria.Text.Trim()
+
+        If String.IsNullOrWhiteSpace(nombre) Then
             MessageBox.Show("Ingrese un nombre de categoría")
             Exit Sub
         End If
 
         Dim categoria As New NombreCategoria()
-        categoria.NombreCategoria = txtNombreCategoria.Text
+
+        categoria.NombreCategoria = nombre
         categoria.Activo = True
 
         If CategoriaDAO.Agregar(categoria) Then
@@ -53,15 +112,125 @@ Public Class PanelAdm
             categorias.Add(categoria)
 
             lstCategorias.Items.Add(categoria.NombreCategoria)
-            cmbCategorias.Items.Add(categoria.NombreCategoria)
+            clbCategorias.Items.Add(categoria.NombreCategoria)
 
             MessageBox.Show("Categoría agregada correctamente")
 
+            txtNombreCategoria.Clear()
+
         End If
 
-        txtNombreCategoria.Clear()
+    End Sub
+
+
+    'boton modificar
+    Private Sub btnEditar_Click(sender As Object, e As EventArgs) Handles btnEditar.Click
+
+        If lstCategorias.SelectedIndex = -1 Then
+            MessageBox.Show("Seleccione una categoría")
+            Exit Sub
+        End If
+
+        Dim nombreNuevo As String = txtNombreCategoria.Text.Trim()
+
+        If String.IsNullOrWhiteSpace(nombreNuevo) Then
+            MessageBox.Show("Ingrese el nombre de la categoría")
+            Exit Sub
+        End If
+
+        Dim indice As Integer = lstCategorias.SelectedIndex
+        Dim categoria As NombreCategoria = categorias(indice)
+
+        Dim nombreAnterior As String = categoria.NombreCategoria
+
+        Try
+            categoria.NombreCategoria = nombreNuevo
+
+            If CategoriaDAO.Modificar(categoria) Then
+
+                lstCategorias.Items(indice) = categoria.NombreCategoria
+                clbCategorias.Items(indice) = categoria.NombreCategoria
+
+                MessageBox.Show("Categoría modificada correctamente en MySQL")
+
+            Else
+
+                categoria.NombreCategoria = nombreAnterior
+                MessageBox.Show("No se pudo modificar la categoría")
+
+            End If
+
+        Catch ex As Exception
+
+            categoria.NombreCategoria = nombreAnterior
+
+            MessageBox.Show(
+            "Error al modificar categoría: " & ex.Message)
+
+        End Try
 
     End Sub
+
+
+    ' BOTÓN ELIMINAR / DESACTIVAR CATEGORÍA
+    Private Sub btnEliminar_Click(sender As Object, e As EventArgs) Handles btnEliminar.Click
+
+        If lstCategorias.SelectedIndex = -1 Then
+            MessageBox.Show("Seleccione una categoría")
+            Exit Sub
+        End If
+
+        Dim indice As Integer = lstCategorias.SelectedIndex
+        Dim categoria As NombreCategoria = categorias(indice)
+
+        ' VERIFICAR PRODUCTOS ASOCIADOS
+        For Each producto As Producto In productos
+
+            If producto.Categoria IsNot Nothing AndAlso
+           producto.Categoria.IDCategoria = categoria.IDCategoria Then
+
+                MessageBox.Show(
+                "No se puede dar de baja esta categoría porque tiene productos asociados.")
+                Exit Sub
+
+            End If
+
+        Next
+
+        ' CONFIRMAR BAJA
+        Dim respuesta As DialogResult =
+        MessageBox.Show(
+            "¿Está seguro de dar de baja la categoría '" &
+            categoria.NombreCategoria & "'?",
+            "Confirmar baja",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Question)
+
+        If respuesta <> DialogResult.Yes Then Exit Sub
+
+        ' DESACTIVAR EN MYSQL
+        If CategoriaDAO.Desactivar(categoria.IDCategoria) Then
+
+            categoria.Activo = False
+
+            categorias.RemoveAt(indice)
+            lstCategorias.Items.RemoveAt(indice)
+            clbCategorias.Items.RemoveAt(indice)
+
+            txtNombreCategoria.Clear()
+
+            MessageBox.Show(
+            "Categoría desactivada correctamente en MySQL.")
+
+        Else
+
+            MessageBox.Show(
+            "No se pudo desactivar la categoría.")
+
+        End If
+
+    End Sub
+
 
     Private Sub lstCategorias_SelectedIndexChanged(sender As Object, e As EventArgs) Handles lstCategorias.SelectedIndexChanged
         If lstCategorias.SelectedIndex >= 0 Then
@@ -71,91 +240,104 @@ Public Class PanelAdm
         End If
     End Sub
 
+
+    ' BOTÓN AGREGAR PRODUCTO
     Private Sub btnAgregarProducto_Click(sender As Object, e As EventArgs) Handles btnAgregarProducto.Click
 
-        If txtNombreProducto.Text = "" Then
+        If String.IsNullOrWhiteSpace(txtNombreProducto.Text) Then
             MessageBox.Show("Ingrese el nombre del producto")
             Exit Sub
         End If
 
-        If txtPrecio.Text = "" Then
-            MessageBox.Show("Ingrese el precio")
+        Dim precio As Decimal
+
+        If Not Decimal.TryParse(txtPrecio.Text, precio) OrElse precio < 0D Then
+            MessageBox.Show("Ingrese un precio válido")
             Exit Sub
         End If
 
-        If cmbCategorias.SelectedIndex = -1 Then
+        If clbCategorias.SelectedIndex = -1 Then
             MessageBox.Show("Seleccione una categoría")
             Exit Sub
         End If
 
         Dim producto As New Producto()
 
-        'producto.IDProducto = proximoIdProducto
-        producto.NombreProducto = txtNombreProducto.Text
-        producto.Descripcion = txtDescripcion.Text
-        producto.Precio = CInt(txtPrecio.Text)
-        producto.Categoria = categorias(cmbCategorias.SelectedIndex)
+        producto.NombreProducto = txtNombreProducto.Text.Trim()
+        producto.Descripcion = txtDescripcion.Text.Trim()
+        producto.Precio = precio
+        producto.Categoria = categorias(clbCategorias.SelectedIndex)
         producto.MaxSabores = CInt(nudMaxSabores.Value)
+        producto.Activo = True
 
-        'linea de mysql probamos
         Try
-            Using conexion As MySqlConnection = ConexionBD.ObtenerConexion()
 
-                conexion.Open()
+            ' 1. GUARDAR PRODUCTO EN MYSQL
+            If Not ProductoDAO.Agregar(producto) Then
+                MessageBox.Show("No se pudo agregar el producto.")
+                Exit Sub
+            End If
 
-                Dim sql As String =
-            "INSERT INTO PRODUCTO " &
-            "(nombre_producto, descripcion_producto, precio, max_sabores) " &
-            "VALUES (@nombre, @descripcion, @precio, @maxSabores);"
+            ' 2. GUARDAR CATEGORÍA EN MYSQL
+            Dim idsCategorias As New List(Of Integer)
 
-                Using comando As New MySqlCommand(sql, conexion)
+            idsCategorias.Add(producto.Categoria.IDCategoria)
 
-                    comando.Parameters.AddWithValue("@nombre", producto.NombreProducto)
-                    comando.Parameters.AddWithValue("@descripcion", producto.Descripcion)
-                    comando.Parameters.AddWithValue("@precio", producto.Precio)
-                    comando.Parameters.AddWithValue("@maxSabores", producto.MaxSabores)
+            ProductoCategoriaDAO.GuardarCategorias(
+            producto.IDProducto, idsCategorias)
 
-                    comando.ExecuteNonQuery()
+            ' 3. PREPARAR SABORES SELECCIONADOS
+            Dim idsSabores As New List(Of Integer)
+            Dim nuevasRelaciones As New List(Of ProductoSabor)
 
-                    'Tomamos el ID que generó MySQL
-                    producto.IDProducto = CInt(comando.LastInsertedId)
+            For Each indice As Integer In clbSabores.CheckedIndices
 
-                End Using
-            End Using
+                Dim idSabor As Integer = sabores(indice).IDSabor
+
+                idsSabores.Add(idSabor)
+
+                Dim relacion As New ProductoSabor()
+                relacion.IDProducto = producto.IDProducto
+                relacion.IDSabor = idSabor
+
+                nuevasRelaciones.Add(relacion)
+
+            Next
+
+            ' 4. GUARDAR SABORES EN MYSQL
+            ProductoSaborDAO.GuardarSabores(
+            producto.IDProducto, idsSabores)
+
+            ' 5. ACTUALIZAR LISTAS EN MEMORIA
+            productos.Add(producto)
+            productosSabores.AddRange(nuevasRelaciones)
+
+            lstProductos.Items.Add(
+            producto.IDProducto & " - " &
+            producto.NombreProducto & " - $" &
+            producto.Precio & " - Máx. " &
+            producto.MaxSabores & " sabores")
+
+            MessageBox.Show("Producto agregado correctamente")
+
+            ' 6. LIMPIAR CAMPOS
+            txtNombreProducto.Clear()
+            txtDescripcion.Clear()
+            txtPrecio.Clear()
+
+            For i As Integer = 0 To clbSabores.Items.Count - 1
+                clbSabores.SetItemChecked(i, False)
+            Next
 
         Catch ex As Exception
-            MessageBox.Show("Error al guardar producto en la base de datos: " &
-                    ex.Message)
-            Exit Sub
+
+            MessageBox.Show(
+            "Error al guardar producto: " & ex.Message)
+
         End Try
 
-        productos.Add(producto)
-
-        For Each indice As Integer In clbSabores.CheckedIndices
-            Dim productoSabor As New ProductoSabor()
-
-            productoSabor.IDProducto = producto.IDProducto
-            productoSabor.IDSabor = sabores(indice).IDSabor
-
-            productosSabores.Add(productoSabor)
-        Next
-
-        lstProductos.Items.Add(producto.IDProducto & " - " &
-        producto.NombreProducto & " - $" &
-        producto.Precio & " - Máx. " &
-        producto.MaxSabores & " sabores")
-        'proximoIdProducto += 1
-        MessageBox.Show("Producto agregado correctamente")
-
-        txtNombreProducto.Clear()
-        txtDescripcion.Clear()
-        txtPrecio.Clear()
-
-        For i As Integer = 0 To clbSabores.Items.Count - 1
-            clbSabores.SetItemChecked(i, False)
-        Next
-
     End Sub
+
 
     Private Sub lstProductos_SelectedIndexChanged(sender As Object, e As EventArgs) Handles lstProductos.SelectedIndexChanged
         If lstProductos.SelectedIndex >= 0 Then
@@ -167,7 +349,16 @@ Public Class PanelAdm
             txtPrecio.Text = producto.Precio.ToString()
             nudMaxSabores.Value = producto.MaxSabores
 
-            cmbCategorias.SelectedItem = producto.Categoria.NombreCategoria
+            If producto.Categoria IsNot Nothing Then
+
+                clbCategorias.SelectedItem =
+        producto.Categoria.NombreCategoria
+
+            Else
+
+                clbCategorias.SelectedIndex = -1
+
+            End If
 
             'Desmarcar todos los sabores
             For i As Integer = 0 To clbSabores.Items.Count - 1
@@ -253,34 +444,112 @@ Public Class PanelAdm
         lblSeccion.Text = "Gestión de Productos"
     End Sub
 
+
+    ' BOTÓN AGREGAR SABOR
     Private Sub btnAgregarSabor_Click(sender As Object, e As EventArgs) Handles btnAgregarSabor.Click
-        If txtNombreSabor.Text = " " Then
+
+        ' VALIDAR NOMBRE
+        If String.IsNullOrWhiteSpace(txtNombreSabor.Text) Then
             MessageBox.Show("Ingrese el nombre del sabor")
             Exit Sub
         End If
-        ' posible correccion 
-        ' If String.IsNullOrWhiteSpace(txtNombreSabor.Text) Then
-        ' MessageBox.Show("Ingrese el nombre del sabor")
-        ' Exit Sub
-        ' End If
+
+        ' CREAR OBJETO SABOR
         Dim sabor As New Sabor()
 
-        sabor.IDSabor = proximoIdSabor
-        sabor.NombreSabor = txtNombreSabor.Text
-        sabor.Descripcion = txtDescripcion.Text
+        sabor.NombreSabor = txtNombreSabor.Text.Trim()
+        sabor.Descripcion = txtDescripcion.Text.Trim()
         sabor.Activo = True
+        sabor.Stock = 0
 
-        sabores.Add(sabor)
+        Try
 
-        lstSabores.Items.Add(sabor.IDSabor & " - " & sabor.NombreSabor)
-        clbSabores.Items.Add(sabor.NombreSabor)
+            ' GUARDAR EN MYSQL
+            If Not SaborDAO.Agregar(sabor) Then
+                MessageBox.Show("No se pudo guardar el sabor.")
+                Exit Sub
+            End If
 
-        proximoIdSabor += 1
+            ' ACTUALIZAR LISTAS EN MEMORIA
+            sabores.Add(sabor)
 
-        MessageBox.Show("Sabor agregado correctamente")
+            lstSabores.Items.Add(
+            sabor.IDSabor & " - " & sabor.NombreSabor)
 
-        txtNombreSabor.Clear()
-        txtDescripcion.Clear()
+            clbSabores.Items.Add(sabor.NombreSabor)
+
+            MessageBox.Show("Sabor agregado correctamente en MySQL")
+
+            ' LIMPIAR CAMPOS
+            txtNombreSabor.Clear()
+            txtDescripcion.Clear()
+
+        Catch ex As Exception
+
+            MessageBox.Show(
+            "Error al agregar sabor: " & ex.Message)
+
+        End Try
+
+    End Sub
+
+
+    Private Sub btnEditarSabor_Click(sender As Object, e As EventArgs) Handles btnEditarSabor.Click
+
+        If lstSabores.SelectedIndex = -1 Then
+            MessageBox.Show("Seleccione un sabor")
+            Exit Sub
+        End If
+
+        If txtNombreSabor.Text.Trim() = "" Then
+            MessageBox.Show("Ingrese el nombre del sabor")
+            Exit Sub
+        End If
+
+        Dim indice As Integer = lstSabores.SelectedIndex
+        Dim sabor As Sabor = sabores(indice)
+
+        sabor.NombreSabor = txtNombreSabor.Text.Trim()
+        sabor.Descripcion = txtDescripcion.Text
+
+        lstSabores.Items(indice) = sabor.IDSabor & " - " & sabor.NombreSabor
+        clbSabores.Items(indice) = sabor.NombreSabor
+
+        MessageBox.Show("Sabor modificado correctamente")
+
+    End Sub
+
+    Private Sub btnEliminarSabor_Click(sender As Object, e As EventArgs) Handles btnEliminarSabor.Click
+
+        If lstSabores.SelectedIndex = -1 Then
+            MessageBox.Show("Seleccione un sabor")
+            Exit Sub
+        End If
+
+        Dim indice As Integer = lstSabores.SelectedIndex
+        Dim sabor As Sabor = sabores(indice)
+
+        Dim respuesta As DialogResult =
+        MessageBox.Show(
+            "¿Está seguro de dar de baja el sabor '" & sabor.NombreSabor & "'?",
+            "Confirmar baja",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Question)
+
+        If respuesta = DialogResult.Yes Then
+
+            sabor.Activo = False
+
+            lstSabores.Items(indice) = sabor.IDSabor & " - " & sabor.NombreSabor & " (Inactivo)"
+
+            clbSabores.Items.RemoveAt(indice)
+
+            MessageBox.Show("Sabor dado de baja correctamente")
+
+            txtNombreSabor.Clear()
+            txtDescripcion.Clear()
+
+        End If
 
     End Sub
 
@@ -667,23 +936,29 @@ Public Class PanelAdm
         End If
     End Sub
 
+
+    ' BOTÓN EDITAR PRODUCTO
     Private Sub btnEditarProducto_Click(sender As Object, e As EventArgs) Handles btnEditarProducto.Click
+
         If lstProductos.SelectedIndex = -1 Then
             MessageBox.Show("Seleccione un producto")
             Exit Sub
         End If
 
-        If txtNombreProducto.Text = "" Then
+        Dim nombre As String = txtNombreProducto.Text.Trim()
+        Dim precio As Decimal
+
+        If String.IsNullOrWhiteSpace(nombre) Then
             MessageBox.Show("Ingrese el nombre del producto")
             Exit Sub
         End If
 
-        If txtPrecio.Text = "" Then
-            MessageBox.Show("Ingrese el precio")
+        If Not Decimal.TryParse(txtPrecio.Text, precio) OrElse precio < 0D Then
+            MessageBox.Show("Ingrese un precio válido")
             Exit Sub
         End If
 
-        If cmbCategorias.SelectedIndex = -1 Then
+        If clbCategorias.SelectedIndex = -1 Then
             MessageBox.Show("Seleccione una categoría")
             Exit Sub
         End If
@@ -691,41 +966,119 @@ Public Class PanelAdm
         Dim indice As Integer = lstProductos.SelectedIndex
         Dim producto As Producto = productos(indice)
 
-        producto.NombreProducto = txtNombreProducto.Text
-        producto.Descripcion = txtDescripcion.Text
-        producto.Precio = CInt(txtPrecio.Text)
-        producto.Categoria = categorias(cmbCategorias.SelectedIndex)
-        producto.MaxSabores = CInt(nudMaxSabores.Value)
+        ' GUARDAR VALORES ANTERIORES
+        Dim nombreAnterior = producto.NombreProducto
+        Dim descripcionAnterior = producto.Descripcion
+        Dim precioAnterior = producto.Precio
+        Dim categoriaAnterior = producto.Categoria
+        Dim maxSaboresAnterior = producto.MaxSabores
 
-        'Actualizar sabores del producto
-        For i As Integer = productosSabores.Count - 1 To 0 Step -1
+        Try
 
-            If productosSabores(i).IDProducto = producto.IDProducto Then
-                productosSabores.RemoveAt(i)
+            producto.NombreProducto = nombre
+            producto.Descripcion = txtDescripcion.Text.Trim()
+            producto.Precio = precio
+            producto.Categoria = categorias(clbCategorias.SelectedIndex)
+            producto.MaxSabores = CInt(nudMaxSabores.Value)
+
+            ' GUARDAR PRODUCTO EN MYSQL
+            If Not ProductoDAO.Modificar(producto) Then
+
+                producto.NombreProducto = nombreAnterior
+                producto.Descripcion = descripcionAnterior
+                producto.Precio = precioAnterior
+                producto.Categoria = categoriaAnterior
+                producto.MaxSabores = maxSaboresAnterior
+
+                MessageBox.Show("No se pudo modificar el producto")
+                Exit Sub
             End If
 
-        Next
+            ' GUARDAR RELACIÓN PRODUCTO - CATEGORÍA
 
-        For Each indiceSabor As Integer In clbSabores.CheckedIndices
+            Dim idsCategorias As New List(Of Integer)
 
-            Dim productoSabor As New ProductoSabor()
+            idsCategorias.Add(producto.Categoria.IDCategoria)
 
-            productoSabor.IDProducto = producto.IDProducto
-            productoSabor.IDSabor = sabores(indiceSabor).IDSabor
+            If Not ProductoCategoriaDAO.GuardarCategorias(
+    producto.IDProducto, idsCategorias) Then
 
-            productosSabores.Add(productoSabor)
+                MessageBox.Show(
+        "No se pudo guardar la categoría del producto.")
 
-        Next
+                Exit Sub
 
-        lstProductos.Items(indice) =
+
+            End If
+
+
+            ' GUARDAR RELACIÓN PRODUCTO - SABORES EN MYSQL
+
+            Dim idsSabores As New List(Of Integer)
+
+            For Each indiceSabor As Integer In clbSabores.CheckedIndices
+
+                idsSabores.Add(sabores(indiceSabor).IDSabor)
+
+            Next
+
+            If Not ProductoSaborDAO.GuardarSabores(
+    producto.IDProducto, idsSabores) Then
+
+                MessageBox.Show(
+        "No se pudieron guardar los sabores del producto.")
+
+                Exit Sub
+
+            End If
+
+
+            ' ACTUALIZAR SABORES EN MEMORIA
+            For i As Integer = productosSabores.Count - 1 To 0 Step -1
+
+                If productosSabores(i).IDProducto = producto.IDProducto Then
+                    productosSabores.RemoveAt(i)
+                End If
+
+            Next
+
+            For Each indiceSabor As Integer In clbSabores.CheckedIndices
+
+                Dim productoSabor As New ProductoSabor()
+
+                productoSabor.IDProducto = producto.IDProducto
+                productoSabor.IDSabor = sabores(indiceSabor).IDSabor
+
+                ProductoSaborDAO.GuardarSabores(producto.IDProducto, idsSabores)
+
+            Next
+
+            ' ACTUALIZAR LISTA VISUAL
+            lstProductos.Items(indice) =
             producto.IDProducto & " - " &
             producto.NombreProducto & " - $" &
             producto.Precio & " - Máx. " &
             producto.MaxSabores & " sabores"
 
-        MessageBox.Show("Producto actualizado correctamente")
+            MessageBox.Show("Datos principales del producto guardados en MySQL")
+
+        Catch ex As Exception
+
+            producto.NombreProducto = nombreAnterior
+            producto.Descripcion = descripcionAnterior
+            producto.Precio = precioAnterior
+            producto.Categoria = categoriaAnterior
+            producto.MaxSabores = maxSaboresAnterior
+
+            MessageBox.Show(
+            "Error al modificar producto: " & ex.Message)
+
+        End Try
+
     End Sub
 
+
+    'boton eliminar producto
     Private Sub btnEliminarProducto_Click(sender As Object, e As EventArgs) Handles btnEliminarProducto.Click
         If lstProductos.SelectedIndex = -1 Then
             MessageBox.Show("Seleccione un producto")
@@ -775,13 +1128,57 @@ Public Class PanelAdm
 
     End Sub
 
+    REM load
     Private Sub PanelAdm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
         cmbGrupoOpcional.Items.Add("Salsas adicionales")
         cmbGrupoOpcional.Items.Add("Baño de chocolate Águila")
 
+        CargarSaboresDesdeBD()
+        CargarCategoriasDesdeBD()
+        CargarProductosDesdeBD()
+        productosSabores.Clear()
+        productosSabores.AddRange(ProductoSaborDAO.Listar())
+
     End Sub
 
+    ' ==========================================
+    ' CARGAR SABORES DESDE MYSQL
+    ' ==========================================
+    Private Sub CargarSaboresDesdeBD()
+
+        Try
+
+            sabores.Clear()
+
+            sabores.AddRange(SaborDAO.Listar())
+
+            lstSabores.Items.Clear()
+            clbSabores.Items.Clear()
+
+            For Each sabor As Sabor In sabores
+
+                lstSabores.Items.Add(
+                sabor.IDSabor & " - " & sabor.NombreSabor)
+
+                If sabor.Activo Then
+
+                    clbSabores.Items.Add(sabor.NombreSabor)
+
+                End If
+
+            Next
+
+        Catch ex As Exception
+
+            MessageBox.Show(
+            "Error al cargar sabores desde MySQL: " & ex.Message)
+
+        End Try
+
+    End Sub
+
+    'boton opcional
     Private Sub btnOpcionales_Click(sender As Object, e As EventArgs) Handles btnOpcionales.Click
 
         pnlCategorias.Visible = False
@@ -797,6 +1194,7 @@ Public Class PanelAdm
 
     End Sub
 
+    'boton agregar opcional
     Private Sub btnAgregarOpcional_Click(sender As Object, e As EventArgs) Handles btnAgregarOpcional.Click
 
         If txtNombreOpcional.Text = "" Then
@@ -848,6 +1246,7 @@ Public Class PanelAdm
         CargarOpcionalesEnProductos()
     End Sub
 
+    '
     Private Sub CargarOpcionalesEnProductos()
 
         clbOpcionalesProducto.Items.Clear()
@@ -879,6 +1278,7 @@ Public Class PanelAdm
         Next
     End Sub
 
+    'boton guardar opcionales
     Private Sub btnGuardarOpcionales_Click(sender As Object, e As EventArgs) Handles btnGuardarOpcionales.Click
         If lstProductos.SelectedIndex = -1 Then
             MessageBox.Show("Seleccione un producto")

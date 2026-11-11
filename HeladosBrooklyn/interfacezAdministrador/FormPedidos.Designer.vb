@@ -34,13 +34,14 @@ Partial Class FormPedidos
         Me.btnVerPedido = New System.Windows.Forms.Button()
         Me.btnVolver = New System.Windows.Forms.Button()
         Me.Button1 = New System.Windows.Forms.Button()
+        Me.colEstado = New System.Windows.Forms.DataGridViewTextBoxColumn()
         CType(Me.dgvPedidos, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'dgvPedidos
         '
         Me.dgvPedidos.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        Me.dgvPedidos.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.NunPedidoCol, Me.FechaCol, Me.EntregaCol, Me.PagoCol, Me.TotalCol})
+        Me.dgvPedidos.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.NunPedidoCol, Me.FechaCol, Me.EntregaCol, Me.PagoCol, Me.TotalCol, Me.colEstado})
         Me.dgvPedidos.Location = New System.Drawing.Point(55, 122)
         Me.dgvPedidos.Name = "dgvPedidos"
         Me.dgvPedidos.Size = New System.Drawing.Size(642, 150)
@@ -125,6 +126,12 @@ Partial Class FormPedidos
         Me.Button1.Text = "hacer conexion"
         Me.Button1.UseVisualStyleBackColor = True
         '
+        'colEstado
+        '
+        Me.colEstado.HeaderText = "Estado"
+        Me.colEstado.Name = "colEstado"
+        Me.colEstado.ReadOnly = True
+        '
         'FormPedidos
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -156,4 +163,5 @@ Partial Class FormPedidos
     Friend WithEvents PagoCol As DataGridViewTextBoxColumn
     Friend WithEvents TotalCol As DataGridViewTextBoxColumn
     Friend WithEvents Button1 As Button
+    Friend WithEvents colEstado As DataGridViewTextBoxColumn
 End Class

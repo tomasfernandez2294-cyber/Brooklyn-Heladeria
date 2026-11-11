@@ -357,7 +357,7 @@ Public Class SaborDAO
             "@stock", sabor.Stock)
 
         cmd.Parameters.AddWithValue(
-            "@activo_sabor", sabor.Activo)
+            "@activo", sabor.Activo)
 
         cmd.Parameters.AddWithValue(
             "@descripcion", sabor.Descripcion)
