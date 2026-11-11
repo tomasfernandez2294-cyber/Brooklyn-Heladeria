@@ -27,13 +27,13 @@ Partial Class FormCarrito
         Me.SaboresCol = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.CantidadCol = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.SubtotalCol = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.NotaCol = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.lblTotal = New System.Windows.Forms.Label()
         Me.btnContinuarPedido = New System.Windows.Forms.Button()
         Me.Label2 = New System.Windows.Forms.Label()
         Me.btnVolver = New System.Windows.Forms.Button()
         Me.btnEditar = New System.Windows.Forms.Button()
         Me.btnEliminar = New System.Windows.Forms.Button()
-        Me.NotaCol = New System.Windows.Forms.DataGridViewTextBoxColumn()
         CType(Me.dgvCarrito, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
@@ -41,7 +41,7 @@ Partial Class FormCarrito
         '
         Me.dgvCarrito.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
         Me.dgvCarrito.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.ProductoCol, Me.SaboresCol, Me.CantidadCol, Me.SubtotalCol, Me.NotaCol})
-        Me.dgvCarrito.Location = New System.Drawing.Point(58, 22)
+        Me.dgvCarrito.Location = New System.Drawing.Point(12, 22)
         Me.dgvCarrito.Name = "dgvCarrito"
         Me.dgvCarrito.Size = New System.Drawing.Size(545, 150)
         Me.dgvCarrito.TabIndex = 0
@@ -65,6 +65,11 @@ Partial Class FormCarrito
         '
         Me.SubtotalCol.HeaderText = "Subtotal"
         Me.SubtotalCol.Name = "SubtotalCol"
+        '
+        'NotaCol
+        '
+        Me.NotaCol.HeaderText = "Nota"
+        Me.NotaCol.Name = "NotaCol"
         '
         'lblTotal
         '
@@ -120,16 +125,11 @@ Partial Class FormCarrito
         Me.btnEliminar.Text = "Eliminar"
         Me.btnEliminar.UseVisualStyleBackColor = True
         '
-        'NotaCol
-        '
-        Me.NotaCol.HeaderText = "Nota"
-        Me.NotaCol.Name = "NotaCol"
-        '
         'FormCarrito
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(800, 450)
+        Me.ClientSize = New System.Drawing.Size(576, 450)
         Me.Controls.Add(Me.btnEliminar)
         Me.Controls.Add(Me.btnEditar)
         Me.Controls.Add(Me.btnVolver)

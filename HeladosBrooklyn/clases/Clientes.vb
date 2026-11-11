@@ -3,7 +3,7 @@
     Public Apellido As String
     Public Nombre As String
     Public Email As String
-    Public FechaNacimiento As Date
+    Public FechaNacimiento As Date?
     Public IDCliente As Integer
     Public DNI As String
     Public Telefono As String

@@ -93,7 +93,7 @@ Partial Class FormMetodoPagoCliente
         '
         'btnIrPedido
         '
-        Me.btnIrPedido.Location = New System.Drawing.Point(357, 389)
+        Me.btnIrPedido.Location = New System.Drawing.Point(203, 389)
         Me.btnIrPedido.Name = "btnIrPedido"
         Me.btnIrPedido.Size = New System.Drawing.Size(75, 23)
         Me.btnIrPedido.TabIndex = 6
@@ -104,7 +104,7 @@ Partial Class FormMetodoPagoCliente
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(800, 450)
+        Me.ClientSize = New System.Drawing.Size(340, 450)
         Me.Controls.Add(Me.btnIrPedido)
         Me.Controls.Add(Me.btnVolver)
         Me.Controls.Add(Me.btnConfirmar)

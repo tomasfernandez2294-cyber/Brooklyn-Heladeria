@@ -146,34 +146,40 @@
     <Compile Include="interfacezAdministrador\FormPedidos.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="interfacez\FormCarrito.Designer.vb">
+    <Compile Include="interfacezUsuario\FormCarrito.Designer.vb">
       <DependentUpon>FormCarrito.vb</DependentUpon>
     </Compile>
-    <Compile Include="interfacez\FormCarrito.vb">
+    <Compile Include="interfacezUsuario\FormCarrito.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="interfacez\FormCliente.Designer.vb">
+    <Compile Include="interfacezUsuario\FormCliente.Designer.vb">
       <DependentUpon>FormCliente.vb</DependentUpon>
     </Compile>
-    <Compile Include="interfacez\FormCliente.vb">
+    <Compile Include="interfacezUsuario\FormCliente.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="interfacez\FormMetodoEntregaCliente.Designer.vb">
+    <Compile Include="interfacezUsuario\FormMetodoEntregaCliente.Designer.vb">
       <DependentUpon>FormMetodoEntregaCliente.vb</DependentUpon>
     </Compile>
-    <Compile Include="interfacez\FormMetodoEntregaCliente.vb">
+    <Compile Include="interfacezUsuario\FormMetodoEntregaCliente.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="interfacez\FormMetodoPagoCliente.Designer.vb">
+    <Compile Include="interfacezUsuario\FormMetodoPagoCliente.Designer.vb">
       <DependentUpon>FormMetodoPagoCliente.vb</DependentUpon>
     </Compile>
-    <Compile Include="interfacez\FormMetodoPagoCliente.vb">
+    <Compile Include="interfacezUsuario\FormMetodoPagoCliente.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="interfacez\FormSaboresCliente.Designer.vb">
+    <Compile Include="interfacezUsuario\FormRegistroCliente.Designer.vb">
+      <DependentUpon>FormRegistroCliente.vb</DependentUpon>
+    </Compile>
+    <Compile Include="interfacezUsuario\FormRegistroCliente.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="interfacezUsuario\FormSaboresCliente.Designer.vb">
       <DependentUpon>FormSaboresCliente.vb</DependentUpon>
     </Compile>
-    <Compile Include="interfacez\FormSaboresCliente.vb">
+    <Compile Include="interfacezUsuario\FormSaboresCliente.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="My Project\AssemblyInfo.vb" />
@@ -191,6 +197,8 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="servicios\ClienteServicio.vb" />
+    <Compile Include="servicios\CuponServicio.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Form1.resx">
@@ -205,19 +213,22 @@
     <EmbeddedResource Include="interfacezAdministrador\FormPedidos.resx">
       <DependentUpon>FormPedidos.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="interfacez\FormCarrito.resx">
+    <EmbeddedResource Include="interfacezUsuario\FormCarrito.resx">
       <DependentUpon>FormCarrito.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="interfacez\FormCliente.resx">
+    <EmbeddedResource Include="interfacezUsuario\FormCliente.resx">
       <DependentUpon>FormCliente.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="interfacez\FormMetodoEntregaCliente.resx">
+    <EmbeddedResource Include="interfacezUsuario\FormMetodoEntregaCliente.resx">
       <DependentUpon>FormMetodoEntregaCliente.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="interfacez\FormMetodoPagoCliente.resx">
+    <EmbeddedResource Include="interfacezUsuario\FormMetodoPagoCliente.resx">
       <DependentUpon>FormMetodoPagoCliente.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="interfacez\FormSaboresCliente.resx">
+    <EmbeddedResource Include="interfacezUsuario\FormRegistroCliente.resx">
+      <DependentUpon>FormRegistroCliente.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="interfacezUsuario\FormSaboresCliente.resx">
       <DependentUpon>FormSaboresCliente.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="My Project\Resources.resx">

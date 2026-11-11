@@ -109,4 +109,11 @@
 
     End Sub
 
+    Private Sub btnRegistrarse_Click(sender As Object, e As EventArgs) Handles btnRegistrarse.Click
+
+        Using formulario As New FormRegistroCliente()
+            formulario.ShowDialog(Me)
+        End Using
+
+    End Sub
 End Class

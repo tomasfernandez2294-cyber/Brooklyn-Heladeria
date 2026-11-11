@@ -27,7 +27,7 @@ Partial Class FormCliente
         Me.picPortada = New System.Windows.Forms.PictureBox()
         Me.pnlContacto = New System.Windows.Forms.Panel()
         Me.btnCompartir = New System.Windows.Forms.Button()
-        Me.btnLlamar = New System.Windows.Forms.Button()
+        Me.btnRegistrarse = New System.Windows.Forms.Button()
         Me.btnWhatsApp = New System.Windows.Forms.Button()
         Me.flpCategorias = New System.Windows.Forms.FlowLayoutPanel()
         Me.flpProductos = New System.Windows.Forms.FlowLayoutPanel()
@@ -80,7 +80,7 @@ Partial Class FormCliente
         'pnlContacto
         '
         Me.pnlContacto.Controls.Add(Me.btnCompartir)
-        Me.pnlContacto.Controls.Add(Me.btnLlamar)
+        Me.pnlContacto.Controls.Add(Me.btnRegistrarse)
         Me.pnlContacto.Controls.Add(Me.btnWhatsApp)
         Me.pnlContacto.Location = New System.Drawing.Point(9, 171)
         Me.pnlContacto.Margin = New System.Windows.Forms.Padding(9, 3, 9, 9)
@@ -97,14 +97,14 @@ Partial Class FormCliente
         Me.btnCompartir.Text = "Compartir"
         Me.btnCompartir.UseVisualStyleBackColor = True
         '
-        'btnLlamar
+        'btnRegistrarse
         '
-        Me.btnLlamar.Location = New System.Drawing.Point(133, 16)
-        Me.btnLlamar.Name = "btnLlamar"
-        Me.btnLlamar.Size = New System.Drawing.Size(64, 20)
-        Me.btnLlamar.TabIndex = 1
-        Me.btnLlamar.Text = "Llamar"
-        Me.btnLlamar.UseVisualStyleBackColor = True
+        Me.btnRegistrarse.Location = New System.Drawing.Point(133, 16)
+        Me.btnRegistrarse.Name = "btnRegistrarse"
+        Me.btnRegistrarse.Size = New System.Drawing.Size(70, 20)
+        Me.btnRegistrarse.TabIndex = 1
+        Me.btnRegistrarse.Text = "Registrarse"
+        Me.btnRegistrarse.UseVisualStyleBackColor = True
         '
         'btnWhatsApp
         '
@@ -175,7 +175,7 @@ Partial Class FormCliente
     Friend WithEvents picPortada As PictureBox
     Friend WithEvents pnlContacto As Panel
     Friend WithEvents btnCompartir As Button
-    Friend WithEvents btnLlamar As Button
+    Friend WithEvents btnRegistrarse As Button
     Friend WithEvents btnWhatsApp As Button
     Friend WithEvents flpCategorias As FlowLayoutPanel
     Friend WithEvents flpProductos As FlowLayoutPanel

@@ -5,4 +5,5 @@
     ListoParaRetirar
     Enviado
     Terminado
+    Cancelado
 End Enum

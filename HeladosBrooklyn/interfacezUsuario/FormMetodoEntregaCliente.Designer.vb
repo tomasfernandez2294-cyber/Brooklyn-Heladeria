@@ -72,7 +72,7 @@ Partial Class FormMetodoEntregaCliente
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(800, 450)
+        Me.ClientSize = New System.Drawing.Size(342, 450)
         Me.Controls.Add(Me.btnContinuar)
         Me.Controls.Add(Me.rbRetiro)
         Me.Controls.Add(Me.rbDelivery)
