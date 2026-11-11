@@ -62,13 +62,17 @@
                 "Cliente registrado correctamente." &
                 vbCrLf &
                 "ID generado: " & cliente.IDCliente)
+                Me.Close()
 
             End If
 
         Catch ex As Exception
 
             MessageBox.Show(
-            "Error al registrar cliente: " & ex.Message)
+            "Error al registrar cliente: " & ex.Message,
+            "Error",
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Error)
 
         End Try
 
@@ -82,4 +86,41 @@
         Me.Close()
 
     End Sub
+    Private Sub btnProbarCupon_Click(
+    sender As Object,
+    e As EventArgs
+)
+
+        Try
+            Dim cupon As New Cupon()
+
+            cupon.codigo = CuponServicio.GenerarCodigo()
+            cupon.tipoDescuento = "PORCENTAJE"
+            cupon.valor = 10D
+            cupon.activo = True
+
+            If CuponDAO.Agregar(cupon) Then
+
+                MessageBox.Show(
+                    "Cupón registrado correctamente." &
+                    vbCrLf &
+                    "ID: " & cupon.idCupon &
+                    vbCrLf &
+                    "Código: " & cupon.codigo)
+
+            Else
+
+                MessageBox.Show("No se pudo guardar el cupón.")
+
+            End If
+
+        Catch ex As Exception
+
+            MessageBox.Show(
+                "Error al guardar cupón: " & ex.Message)
+
+        End Try
+
+    End Sub
+
 End Class

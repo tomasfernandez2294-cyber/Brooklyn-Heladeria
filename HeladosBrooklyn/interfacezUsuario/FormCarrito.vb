@@ -1,6 +1,7 @@
 ﻿Public Class FormCarrito
 
     Private carritoActual As Carrito
+    Private descuentoActual As Decimal = 0D
 
     'Constructor para el diseñador
     Public Sub New()
@@ -19,6 +20,32 @@
         CargarCarrito()
 
     End Sub
+
+    'metodo para actualizar el total
+
+    Private Sub ActualizarTotal()
+
+        If carritoActual Is Nothing Then Exit Sub
+
+        Dim subtotal As Decimal =
+        Convert.ToDecimal(carritoActual.CalcularTotal())
+
+        descuentoActual = carritoActual.CalcularDescuento()
+
+        Dim totalFinal As Decimal =
+        carritoActual.CalcularTotalFinal()
+
+        lblSubtotal.Text =
+        "$" & subtotal.ToString("N2")
+
+        lblDescuento.Text =
+        "-$" & descuentoActual.ToString("N2")
+
+        lblTotal.Text =
+        "$" & totalFinal.ToString("N2")
+
+    End Sub
+
 
     REM procedimiento para cargar al carrito 
     Private Sub CargarCarrito()
@@ -53,7 +80,7 @@
 
         Next
 
-        lblTotal.Text = "$" & carritoActual.CalcularTotal().ToString()
+        ActualizarTotal()
 
     End Sub
 
@@ -108,4 +135,64 @@
 
     End Sub
 
+    'boton aplicar descuento
+    Private Sub btnAplicarCupon_Click(
+    sender As Object,
+    e As EventArgs
+) Handles btnAplicarCupon.Click
+
+        Try
+            carritoActual.CuponAplicado = Nothing
+            descuentoActual = 0D
+            ActualizarTotal()
+
+            Dim codigo As String =
+                txtCodigoCupon.Text.Trim()
+
+            If String.IsNullOrWhiteSpace(codigo) Then
+                MessageBox.Show("Ingrese un código de cupón.")
+                Exit Sub
+            End If
+
+            Dim cupon As Cupon =
+                CuponDAO.BuscarPorCodigo(codigo)
+
+            If cupon Is Nothing Then
+                MessageBox.Show("El cupón no existe.")
+                Exit Sub
+            End If
+
+            If Not cupon.activo Then
+                MessageBox.Show("El cupón está deshabilitado.")
+                Exit Sub
+            End If
+
+            Dim subtotal As Decimal =
+                Convert.ToDecimal(carritoActual.CalcularTotal())
+
+            Dim descuento As Decimal =
+                CuponServicio.CalcularDescuento(cupon, subtotal)
+
+            If descuento <= 0D Then
+                MessageBox.Show("El cupón no es válido para este pedido.")
+                Exit Sub
+            End If
+
+            carritoActual.CuponAplicado = cupon
+
+            ActualizarTotal()
+
+            MessageBox.Show(
+                "Cupón aplicado correctamente." &
+                vbCrLf &
+                "Descuento: $" & descuentoActual.ToString("N2"))
+
+        Catch ex As Exception
+
+            MessageBox.Show(
+                "Error al aplicar el cupón: " & ex.Message)
+
+        End Try
+
+    End Sub
 End Class

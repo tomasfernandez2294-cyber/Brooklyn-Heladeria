@@ -11,15 +11,15 @@ Public Class CuponDAO
 
             Dim sql As String =
                 "INSERT INTO CUPON " &
-                "(codigo, tipo_descuento, valor, habilitado) " &
-                "VALUES (@codigo, @tipo, @valor, @habilitado)"
+                "(codigo, tipo_descuento, valor, activo) " &
+                "VALUES (@codigo, @tipo, @valor, @activo)"
 
             Using cmd As New MySqlCommand(sql, conexion)
 
                 cmd.Parameters.AddWithValue("@codigo", cupon.codigo)
                 cmd.Parameters.AddWithValue("@tipo", cupon.tipoDescuento)
                 cmd.Parameters.AddWithValue("@valor", cupon.valor)
-                cmd.Parameters.AddWithValue("@habilitado", cupon.habilitado)
+                cmd.Parameters.AddWithValue("@activo", cupon.activo)
 
                 cmd.ExecuteNonQuery()
                 cupon.idCupon = Convert.ToInt32(cmd.LastInsertedId)
@@ -41,7 +41,7 @@ Public Class CuponDAO
 
             Dim sql As String =
                 "SELECT id_cupon, codigo, tipo_descuento, " &
-                "valor, habilitado FROM CUPON"
+                "valor, activo FROM CUPON"
 
             Using cmd As New MySqlCommand(sql, conexion)
                 Using reader As MySqlDataReader = cmd.ExecuteReader()
@@ -67,7 +67,7 @@ Public Class CuponDAO
 
             Dim sql As String =
                 "SELECT id_cupon, codigo, tipo_descuento, " &
-                "valor, habilitado FROM CUPON " &
+                "valor, activo FROM CUPON " &
                 "WHERE codigo = @codigo LIMIT 1"
 
             Using cmd As New MySqlCommand(sql, conexion)
@@ -99,7 +99,7 @@ Public Class CuponDAO
                 "codigo = @codigo, " &
                 "tipo_descuento = @tipo, " &
                 "valor = @valor, " &
-                "habilitado = @habilitado " &
+                "activo = @activo " &
                 "WHERE id_cupon = @id"
 
             Using cmd As New MySqlCommand(sql, conexion)
@@ -108,7 +108,7 @@ Public Class CuponDAO
                 cmd.Parameters.AddWithValue("@codigo", cupon.codigo)
                 cmd.Parameters.AddWithValue("@tipo", cupon.tipoDescuento)
                 cmd.Parameters.AddWithValue("@valor", cupon.valor)
-                cmd.Parameters.AddWithValue("@habilitado", cupon.habilitado)
+                cmd.Parameters.AddWithValue("@activo", cupon.activo)
 
                 Return cmd.ExecuteNonQuery() > 0
 
@@ -125,7 +125,7 @@ Public Class CuponDAO
             conexion.Open()
 
             Dim sql As String =
-                "UPDATE CUPON SET habilitado = 0 " &
+                "UPDATE CUPON SET activo = 0 " &
                 "WHERE id_cupon = @id"
 
             Using cmd As New MySqlCommand(sql, conexion)
@@ -151,11 +151,11 @@ Public Class CuponDAO
 
         Dim cupon As Cupon = BuscarPorCodigo(codigo)
 
-        If cupon Is Nothing OrElse Not cupon.habilitado Then
+        If cupon Is Nothing OrElse Not cupon.activo Then
             Return 0D
         End If
 
-        Dim valor As Decimal = Convert.ToDecimal(cupon.valor)
+        Dim valor As Decimal = cupon.valor
         Dim descuento As Decimal
 
         Select Case cupon.tipoDescuento.Trim().ToUpperInvariant()
@@ -194,9 +194,9 @@ Public Class CuponDAO
         cupon.codigo = Convert.ToString(reader("codigo"))
         cupon.tipoDescuento =
             Convert.ToString(reader("tipo_descuento"))
-        cupon.valor = Convert.ToDouble(reader("valor"))
-        cupon.habilitado =
-            Convert.ToBoolean(reader("habilitado"))
+        cupon.valor = Convert.ToDecimal(reader("valor"))
+        cupon.activo =
+            Convert.ToBoolean(reader("activo"))
 
         Return cupon
 
