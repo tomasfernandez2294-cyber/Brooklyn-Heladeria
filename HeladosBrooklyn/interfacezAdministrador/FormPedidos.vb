@@ -3,6 +3,8 @@
     Private Sub FormPedidos_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
         CargarPedidos()
+        EstiloBrooklyn.Aplicar(Me)
+
 
     End Sub
 
@@ -67,7 +69,9 @@
                 dgvPedidos.Rows.Add(
                     pedido.NumeroPedido,
                     pedido.fechaPedido.ToString("dd/MM/yyyy HH:mm"),
-                    "-",
+                    If(pedido.MetodoEntrega IsNot Nothing,
+   pedido.MetodoEntrega.Nombre,
+   "-"),
                     "-",
                     "$ " & pedido.total.ToString("N0"),
                     pedido.estadoPedido.ToString()
@@ -106,17 +110,17 @@
 
     Private Sub btnPreparacion_Click(sender As Object, e As EventArgs) Handles btnPreparacion.Click
         ActualizarEstadoSeleccionado(
-        EstadoPedido.EnPreparacion)
+        EstadoPedido.EN_PREPARACION)
     End Sub
 
     Private Sub btnFinalizados_Click(sender As Object, e As EventArgs) Handles btnFinalizados.Click
         ActualizarEstadoSeleccionado(
-        EstadoPedido.Terminado
+        EstadoPedido.ENTREGADO
         )
     End Sub
 
     Private Sub btnNuevo_Click(sender As Object, e As EventArgs) Handles btnNuevo.Click
         ActualizarEstadoSeleccionado(
-        EstadoPedido.Nuevo)
+        EstadoPedido.RECIBIDO)
     End Sub
 End Class

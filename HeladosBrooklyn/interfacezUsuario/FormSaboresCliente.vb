@@ -39,6 +39,8 @@ Public Class FormSaboresCliente
         e As EventArgs
     ) Handles MyBase.Load
 
+        EstiloBrooklyn.Aplicar(Me)
+
         ' Mostrar datos del producto
         lblNombreProducto.Text = productoSeleccionado.NombreProducto
 

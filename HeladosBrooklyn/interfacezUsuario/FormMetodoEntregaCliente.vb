@@ -1,5 +1,6 @@
 ﻿
 Public Class FormMetodoEntregaCliente
+    Public Property PedidoGuardado As Pedido
 
     Private carritoActual As Carrito
 
@@ -57,11 +58,18 @@ Public Class FormMetodoEntregaCliente
                 Dim resultado As DialogResult =
                     formularioPago.ShowDialog(Me)
 
+
                 If resultado = DialogResult.OK Then
+
+                    ' Recuperar el pedido confirmado
+                    PedidoGuardado = formularioPago.PedidoGuardado
+
                     Me.DialogResult = DialogResult.OK
                     Me.Close()
                     Return
+
                 End If
+
 
             Finally
                 If Not Me.IsDisposed Then
@@ -73,4 +81,11 @@ Public Class FormMetodoEntregaCliente
 
     End Sub
 
+    REM load
+    Private Sub FormMetodoEntregaCliente_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+
+        EstiloBrooklyn.Aplicar(Me)
+
+
+    End Sub
 End Class

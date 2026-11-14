@@ -35,7 +35,7 @@ Public Class PedidoDAO
                     "INSERT INTO pedido " &
                     "(id_cliente, id_metodo_entrega, numero_pedido, " &
                     "fecha_pedido, estado_pedido, estado_pago, " &
-                    "monto_descuento, total) " &
+                    "monto_descuento_congelado, total) " &
                     "VALUES (@cliente, @entrega, @numero, " &
                     "@fecha, @estado, @pago, @descuento, @total)"
 
@@ -58,7 +58,7 @@ Public Class PedidoDAO
                         "@fecha", pedido.fechaPedido)
 
                         cmd.Parameters.AddWithValue(
-                        "@estado", pedido.estadoPedido.ToString())
+    "@estado", pedido.estadoPedido.ToString())
 
                         cmd.Parameters.AddWithValue(
                         "@pago", pedido.estadoPago.ToString())
@@ -175,12 +175,18 @@ Public Class PedidoDAO
             conexion.Open()
 
             Dim sql As String =
-                "SELECT id_pedido, numero_pedido, " &
-                "fecha_pedido, total, monto_descuento, " &
-                "costo_envio_congelado, " &
-                "estado_pedido, estado_pago " &
-                "FROM pedido " &
-                "ORDER BY fecha_pedido DESC"
+    "SELECT id_pedido, " &
+    "id_cliente, " &
+    "id_metodo_entrega, " &
+    "numero_pedido, " &
+    "fecha_pedido, " &
+    "total, " &
+    "monto_descuento_congelado, " &
+    "costo_envio_congelado, " &
+    "estado_pedido, " &
+    "estado_pago " &
+    "FROM pedido " &
+    "ORDER BY fecha_pedido DESC"
 
             Using cmd As New MySqlCommand(sql, conexion)
 
@@ -195,6 +201,7 @@ Public Class PedidoDAO
 
             End Using
         End Using
+
 
         Return pedidos
 
@@ -214,7 +221,7 @@ Public Class PedidoDAO
 
             Dim sql As String =
                 "SELECT id_pedido, numero_pedido, " &
-                "fecha_pedido, total, monto_descuento, " &
+                "fecha_pedido, total, monto_descuento_congelado, " &
                 "costo_envio_congelado, " &
                 "estado_pedido, estado_pago " &
                 "FROM pedido WHERE id_pedido = @id"
@@ -253,7 +260,7 @@ Public Class PedidoDAO
 
             Dim sql As String =
                 "SELECT id_pedido, numero_pedido, " &
-                "fecha_pedido, total, monto_descuento, " &
+                "fecha_pedido, total, monto_descuento_congelado, " &
                 "costo_envio_congelado, " &
                 "estado_pedido, estado_pago " &
                 "FROM pedido " &
@@ -399,11 +406,10 @@ Public Class PedidoDAO
     ' ==========================================
     ' CANCELAR PEDIDO
     ' ==========================================
-    Public Shared Function Cancelar(
-        id As Integer) As Boolean
+    Public Shared Function Cancelar(id As Integer) As Boolean
 
         Return CambiarEstadoPedido(
-            id, EstadoPedido.Cancelado)
+        id, EstadoPedido.CANCELADO)
 
     End Function
 
@@ -431,7 +437,7 @@ Public Class PedidoDAO
         ' Calcular subtotal a partir de los
         ' campos existentes en MySQL
         Dim descuento As Decimal =
-            Convert.ToDecimal(reader("monto_descuento"))
+            Convert.ToDecimal(reader("monto_descuento_congelado"))
 
         Dim costoEnvio As Decimal =
             Convert.ToDecimal(reader("costo_envio_congelado"))
@@ -453,6 +459,23 @@ Public Class PedidoDAO
                 Convert.ToString(reader("estado_pago")),
                 True), EstadoPago)
 
+        ' RECUPERAR MÉTODO DE ENTREGA
+        Dim idEntrega As Integer =
+    Convert.ToInt32(reader("id_metodo_entrega"))
+
+        pedido.MetodoEntrega = New MetodoEntrega()
+
+        pedido.MetodoEntrega.IDMetodoEntrega = idEntrega
+
+        Select Case idEntrega
+
+            Case 1
+                pedido.MetodoEntrega.Nombre = "Delivery"
+
+            Case 2
+                pedido.MetodoEntrega.Nombre = "Retiro en el local"
+
+        End Select
         Return pedido
 
     End Function

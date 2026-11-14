@@ -123,7 +123,7 @@ Public Class PanelAdm
     End Sub
 
 
-    'boton modificar
+    'boton modificar categoria
     Private Sub btnEditar_Click(sender As Object, e As EventArgs) Handles btnEditar.Click
 
         If lstCategorias.SelectedIndex = -1 Then
@@ -286,17 +286,23 @@ Public Class PanelAdm
             ProductoCategoriaDAO.GuardarCategorias(
             producto.IDProducto, idsCategorias)
 
+
             ' 3. PREPARAR SABORES SELECCIONADOS
+
             Dim idsSabores As New List(Of Integer)
             Dim nuevasRelaciones As New List(Of ProductoSabor)
 
             For Each indice As Integer In clbSabores.CheckedIndices
 
-                Dim idSabor As Integer = sabores(indice).IDSabor
+                Dim opcion As OpcionSabor =
+        CType(clbSabores.Items(indice), OpcionSabor)
+
+                Dim idSabor As Integer = opcion.Sabor.IDSabor
 
                 idsSabores.Add(idSabor)
 
                 Dim relacion As New ProductoSabor()
+
                 relacion.IDProducto = producto.IDProducto
                 relacion.IDSabor = idSabor
 
@@ -304,9 +310,16 @@ Public Class PanelAdm
 
             Next
 
-            ' 4. GUARDAR SABORES EN MYSQL
-            ProductoSaborDAO.GuardarSabores(
-            producto.IDProducto, idsSabores)
+
+            ' 4. GUARDAR SABORES EN MYSQ
+
+            If Not ProductoSaborDAO.GuardarSabores(
+                producto.IDProducto, idsSabores) Then
+
+                MessageBox.Show("No se pudieron guardar los sabores.")
+                Exit Sub
+
+            End If
 
             ' 5. ACTUALIZAR LISTAS EN MEMORIA
             productos.Add(producto)
@@ -338,7 +351,7 @@ Public Class PanelAdm
 
     End Sub
 
-
+    REM procedimiento para actualizar la lista productoSabors
     Private Sub lstProductos_SelectedIndexChanged(sender As Object, e As EventArgs) Handles lstProductos.SelectedIndexChanged
         If lstProductos.SelectedIndex >= 0 Then
 
@@ -365,22 +378,36 @@ Public Class PanelAdm
                 clbSabores.SetItemChecked(i, False)
             Next
 
-            'Marcar los sabores asociados al producto
-            For Each productoSabor As ProductoSabor In productosSabores
 
-                If productoSabor.IDProducto = producto.IDProducto Then
 
-                    For i As Integer = 0 To sabores.Count - 1
+            ' MARCAR SABORES ASOCIADOS AL PRODUCTO
 
-                        If sabores(i).IDSabor = productoSabor.IDSabor Then
+            Try
+
+                Dim relaciones As List(Of ProductoSabor) =
+        ProductoSaborDAO.ListarPorProducto(producto.IDProducto)
+
+                For Each relacion As ProductoSabor In relaciones
+
+                    For i As Integer = 0 To clbSabores.Items.Count - 1
+
+                        Dim opcion As OpcionSabor =
+                CType(clbSabores.Items(i), OpcionSabor)
+
+                        If opcion.Sabor.IDSabor = relacion.IDSabor Then
                             clbSabores.SetItemChecked(i, True)
                         End If
 
                     Next
 
-                End If
+                Next
 
-            Next
+            Catch ex As Exception
+
+                MessageBox.Show(
+        "Error al cargar los sabores del producto: " & ex.Message)
+
+            End Try
 
 
             'Cargar opcionales con el precio correspondiente al producto
@@ -430,7 +457,7 @@ Public Class PanelAdm
         End If
 
     End Sub
-
+    REM boton productos
     Private Sub btnProductos_Click(sender As Object, e As EventArgs) Handles btnProductos.Click
 
         pnlCategorias.Visible = False
@@ -476,7 +503,8 @@ Public Class PanelAdm
             lstSabores.Items.Add(
             sabor.IDSabor & " - " & sabor.NombreSabor)
 
-            clbSabores.Items.Add(sabor.NombreSabor)
+            clbSabores.Items.Add(
+    New OpcionSabor With {.Sabor = sabor})
 
             MessageBox.Show("Sabor agregado correctamente en MySQL")
 
@@ -493,6 +521,7 @@ Public Class PanelAdm
 
     End Sub
 
+    REM boton editar sabor
 
     Private Sub btnEditarSabor_Click(sender As Object, e As EventArgs) Handles btnEditarSabor.Click
 
@@ -501,7 +530,7 @@ Public Class PanelAdm
             Exit Sub
         End If
 
-        If txtNombreSabor.Text.Trim() = "" Then
+        If String.IsNullOrWhiteSpace(txtNombreSabor.Text) Then
             MessageBox.Show("Ingrese el nombre del sabor")
             Exit Sub
         End If
@@ -509,15 +538,45 @@ Public Class PanelAdm
         Dim indice As Integer = lstSabores.SelectedIndex
         Dim sabor As Sabor = sabores(indice)
 
+        Dim nombreAnterior As String = sabor.NombreSabor
+        Dim descripcionAnterior As String = sabor.Descripcion
+
         sabor.NombreSabor = txtNombreSabor.Text.Trim()
-        sabor.Descripcion = txtDescripcion.Text
+        sabor.Descripcion = txtDescripcion.Text.Trim()
 
-        lstSabores.Items(indice) = sabor.IDSabor & " - " & sabor.NombreSabor
-        clbSabores.Items(indice) = sabor.NombreSabor
+        Try
 
-        MessageBox.Show("Sabor modificado correctamente")
+            If SaborDAO.Modificar(sabor) Then
+
+                CargarSaboresDesdeBD()
+
+                MessageBox.Show("Sabor modificado correctamente en MySQL")
+
+                txtNombreSabor.Clear()
+                txtDescripcion.Clear()
+
+            Else
+
+                sabor.NombreSabor = nombreAnterior
+                sabor.Descripcion = descripcionAnterior
+
+                MessageBox.Show("No se pudo modificar el sabor.")
+
+            End If
+
+        Catch ex As Exception
+
+            sabor.NombreSabor = nombreAnterior
+            sabor.Descripcion = descripcionAnterior
+
+            MessageBox.Show("Error al modificar sabor: " & ex.Message)
+
+        End Try
 
     End Sub
+
+
+    REM boton eliminar sabor
 
     Private Sub btnEliminarSabor_Click(sender As Object, e As EventArgs) Handles btnEliminarSabor.Click
 
@@ -531,28 +590,41 @@ Public Class PanelAdm
 
         Dim respuesta As DialogResult =
         MessageBox.Show(
-            "¿Está seguro de dar de baja el sabor '" & sabor.NombreSabor & "'?",
+            "¿Está seguro de dar de baja el sabor '" &
+            sabor.NombreSabor & "'?",
             "Confirmar baja",
             MessageBoxButtons.YesNo,
             MessageBoxIcon.Question)
 
-        If respuesta = DialogResult.Yes Then
+        If respuesta <> DialogResult.Yes Then Exit Sub
 
-            sabor.Activo = False
+        Try
 
-            lstSabores.Items(indice) = sabor.IDSabor & " - " & sabor.NombreSabor & " (Inactivo)"
+            If SaborDAO.Eliminar(sabor.IDSabor) Then
 
-            clbSabores.Items.RemoveAt(indice)
+                CargarSaboresDesdeBD()
 
-            MessageBox.Show("Sabor dado de baja correctamente")
+                MessageBox.Show("Sabor dado de baja correctamente en MySQL")
 
-            txtNombreSabor.Clear()
-            txtDescripcion.Clear()
+                txtNombreSabor.Clear()
+                txtDescripcion.Clear()
 
-        End If
+            Else
+
+                MessageBox.Show("No se pudo dar de baja el sabor.")
+
+            End If
+
+        Catch ex As Exception
+
+            MessageBox.Show("Error al eliminar sabor: " & ex.Message)
+
+        End Try
 
     End Sub
 
+
+    REM boton sabores 
     Private Sub btnSabores_Click(sender As Object, e As EventArgs) Handles btnSabores.Click
 
         pnlCategorias.Visible = False
@@ -567,6 +639,7 @@ Public Class PanelAdm
 
     End Sub
 
+    REM boton configuracion
     Private Sub btnConfiguracion_Click(sender As Object, e As EventArgs) Handles btnConfiguracion.Click
 
         pnlCategorias.Visible = False
@@ -580,6 +653,7 @@ Public Class PanelAdm
         lblSeccion.Text = "Gestión de Configuración"
 
     End Sub
+
 
     Private Sub btnAgregarMetodoPago_Click(sender As Object, e As EventArgs) Handles btnAgregarMetodoPago.Click
         Dim formulario As New FormMetodoPago()
@@ -776,6 +850,7 @@ Public Class PanelAdm
         End If
     End Sub
 
+    REM boton clientes
     Private Sub btnClientes_Click(sender As Object, e As EventArgs) Handles btnClientes.Click
 
         pnlCategorias.Visible = False
@@ -789,152 +864,270 @@ Public Class PanelAdm
         lblSeccion.Text = "Gestión de Clientes"
     End Sub
 
+    REM boton agregar cliente
+
     Private Sub btnAgregarCliente_Click(sender As Object, e As EventArgs) Handles btnAgregarCliente.Click
-        If txtNombreCliente.Text = "" Then
-            MessageBox.Show("Ingrese el nombre del cliente")
-            Exit Sub
-        End If
 
-        If txtApellidoCliente.Text = "" Then
-            MessageBox.Show("Ingrese el apellido del cliente")
-            Exit Sub
-        End If
+        If String.IsNullOrWhiteSpace(txtNombreCliente.Text) OrElse
+       String.IsNullOrWhiteSpace(txtApellidoCliente.Text) OrElse
+       String.IsNullOrWhiteSpace(txtTelefonoCliente.Text) Then
 
-        If txtDniCliente.Text = "" Then
-            MessageBox.Show("Ingrese el DNI del cliente")
+            MessageBox.Show("Complete nombre, apellido y teléfono.")
             Exit Sub
-        End If
 
-        If txtTelefonoCliente.Text = "" Then
-            MessageBox.Show("Ingrese el teléfono del cliente")
-            Exit Sub
-        End If
-
-        If txtEmailCliente.Text = "" Then
-            MessageBox.Show("Ingrese el email del cliente")
-            Exit Sub
         End If
 
         Dim cliente As New Cliente()
 
-        cliente.IDCliente = proximoIdCliente
-        cliente.Nombre = txtNombreCliente.Text
-        cliente.Apellido = txtApellidoCliente.Text
-        cliente.DNI = txtDniCliente.Text
-        cliente.Telefono = txtTelefonoCliente.Text
-        cliente.Email = txtEmailCliente.Text
-        cliente.Habilitado = True
+        cliente.Nombre = txtNombreCliente.Text.Trim()
+        cliente.Apellido = txtApellidoCliente.Text.Trim()
+        cliente.Telefono = txtTelefonoCliente.Text.Trim()
+        cliente.Email = txtEmailCliente.Text.Trim()
 
-        clientes.Add(cliente)
+        ' FECHA DE NACIMIENTO
 
-        lstClientes.Items.Add(cliente.IDCliente & " - " & cliente.Nombre & " " & cliente.Apellido & " - DNI: " & cliente.DNI)
+        If dtpFechaNacimientoCliente.Checked Then
 
-        proximoIdCliente += 1
-        MessageBox.Show("Cliente agregado correctamente")
+            cliente.FechaNacimiento =
+        dtpFechaNacimientoCliente.Value.Date
 
-        txtNombreCliente.Clear()
-        txtApellidoCliente.Clear()
-        txtDniCliente.Clear()
-        txtTelefonoCliente.Clear()
-        txtEmailCliente.Clear()
-    End Sub
+        Else
 
-    Private Sub lstClientes_SelectedIndexChanged(sender As Object, e As EventArgs) Handles lstClientes.SelectedIndexChanged
-        If lstClientes.SelectedIndex >= 0 Then
-
-            Dim cliente As Cliente = clientes(lstClientes.SelectedIndex)
-
-            txtNombreCliente.Text = cliente.Nombre
-            txtApellidoCliente.Text = cliente.Apellido
-            txtDniCliente.Text = cliente.DNI
-            txtTelefonoCliente.Text = cliente.Telefono
-            txtEmailCliente.Text = cliente.Email
+            cliente.FechaNacimiento = Nothing
 
         End If
+
+        cliente.Habilitado = True
+
+        Try
+
+            If ClienteDAO.Agregar(cliente) Then
+
+                CargarClientesDesdeBD()
+
+                MessageBox.Show("Cliente agregado correctamente en MySQL.")
+
+                txtNombreCliente.Clear()
+                txtApellidoCliente.Clear()
+                dtpFechaNacimientoCliente.Checked = False
+                txtTelefonoCliente.Clear()
+                txtEmailCliente.Clear()
+
+            Else
+
+                MessageBox.Show("No se pudo agregar el cliente.")
+
+            End If
+
+        Catch ex As Exception
+
+            MessageBox.Show("Error al agregar cliente: " & ex.Message)
+
+        End Try
+
     End Sub
 
+    'procedimiento para cargar los clientes de la db 
+
+    Private Sub CargarClientesDesdeBD()
+
+        Try
+
+            Dim clientesBD As List(Of Cliente) = ClienteDAO.Listar()
+
+            clientes.Clear()
+            clientes.AddRange(clientesBD)
+
+            lstClientes.Items.Clear()
+
+            For Each cliente As Cliente In clientes
+
+                lstClientes.Items.Add(
+                cliente.IDCliente & " - " &
+                cliente.Nombre & " " &
+                cliente.Apellido & " - Tel: " &
+                cliente.Telefono)
+
+            Next
+
+        Catch ex As Exception
+
+            MessageBox.Show(
+            "Error al cargar clientes desde MySQL: " & ex.Message)
+
+        End Try
+
+    End Sub
+
+
+    'boton listar clientes
+
+    Private Sub lstClientes_SelectedIndexChanged(sender As Object, e As EventArgs) Handles lstClientes.SelectedIndexChanged
+
+        If lstClientes.SelectedIndex = -1 Then Exit Sub
+
+        Dim cliente As Cliente = clientes(lstClientes.SelectedIndex)
+
+        txtNombreCliente.Text = cliente.Nombre
+        txtApellidoCliente.Text = cliente.Apellido
+        txtTelefonoCliente.Text = cliente.Telefono
+        txtEmailCliente.Text = cliente.Email
+
+        ' MOSTRAR FECHA DE NACIMIENTO
+
+        If cliente.FechaNacimiento.HasValue Then
+
+            dtpFechaNacimientoCliente.Value =
+        cliente.FechaNacimiento.Value.Date
+
+            dtpFechaNacimientoCliente.Checked = True
+
+        Else
+
+            dtpFechaNacimientoCliente.Checked = False
+
+        End If
+
+
+        dtpFechaNacimientoCliente.Checked = False
+
+    End Sub
+
+
+    ' BOTÓN EDITAR CLIENTE
     Private Sub btnEditarCliente_Click(sender As Object, e As EventArgs) Handles btnEditarCliente.Click
 
         If lstClientes.SelectedIndex = -1 Then
-            MessageBox.Show("Seleccione un cliente")
+            MessageBox.Show("Seleccione un cliente.")
             Exit Sub
         End If
 
-        If txtNombreCliente.Text = "" Then
-            MessageBox.Show("Ingrese el nombre del cliente")
-            Exit Sub
-        End If
+        If String.IsNullOrWhiteSpace(txtNombreCliente.Text) OrElse
+       String.IsNullOrWhiteSpace(txtApellidoCliente.Text) OrElse
+       String.IsNullOrWhiteSpace(txtTelefonoCliente.Text) Then
 
-        If txtApellidoCliente.Text = "" Then
-            MessageBox.Show("Ingrese el apellido del cliente")
-            Exit Sub
-        End If
-
-        If txtDniCliente.Text = "" Then
-            MessageBox.Show("Ingrese el DNI del cliente")
-            Exit Sub
-        End If
-
-        If txtTelefonoCliente.Text = "" Then
-            MessageBox.Show("Ingrese el teléfono del cliente")
-            Exit Sub
-        End If
-
-        If txtEmailCliente.Text = "" Then
-            MessageBox.Show("Ingrese el email del cliente")
+            MessageBox.Show("Complete nombre, apellido y teléfono.")
             Exit Sub
         End If
 
         Dim indice As Integer = lstClientes.SelectedIndex
         Dim cliente As Cliente = clientes(indice)
 
-        cliente.Nombre = txtNombreCliente.Text
-        cliente.Apellido = txtApellidoCliente.Text
-        cliente.DNI = txtDniCliente.Text
-        cliente.Telefono = txtTelefonoCliente.Text
-        cliente.Email = txtEmailCliente.Text
+        ' Actualizar datos del cliente
+        cliente.Nombre = txtNombreCliente.Text.Trim()
+        cliente.Apellido = txtApellidoCliente.Text.Trim()
+        cliente.Telefono = txtTelefonoCliente.Text.Trim()
+        cliente.Email = txtEmailCliente.Text.Trim()
 
-        lstClientes.Items(indice) =
-            cliente.IDCliente & " - " &
-            cliente.Nombre & " " &
-            cliente.Apellido & " - DNI: " &
-            cliente.DNI
+        ' ACTUALIZAR FECHA DE NACIMIENTO
 
-        MessageBox.Show("Cliente actualizado correctamente")
+        If dtpFechaNacimientoCliente.Checked Then
+
+            cliente.FechaNacimiento =
+        dtpFechaNacimientoCliente.Value.Date
+
+        Else
+
+            cliente.FechaNacimiento = Nothing
+
+        End If
+
+        Try
+
+            ' Guardar cambios en MySQL
+            If ClienteDAO.Modificar(cliente) Then
+
+                CargarClientesDesdeBD()
+
+                MessageBox.Show(
+                "Cliente actualizado correctamente en MySQL.")
+
+                txtNombreCliente.Clear()
+                txtApellidoCliente.Clear()
+                dtpFechaNacimientoCliente.Checked = False
+                txtTelefonoCliente.Clear()
+                txtEmailCliente.Clear()
+
+            Else
+
+                MessageBox.Show(
+                "No se pudo actualizar el cliente.")
+
+            End If
+
+        Catch ex As Exception
+
+            MessageBox.Show(
+            "Error al modificar cliente: " & ex.Message)
+
+        End Try
+
     End Sub
 
+
+
+    ' BOTÓN ELIMINAR CLIENTE
     Private Sub btnEliminarCliente_Click(sender As Object, e As EventArgs) Handles btnEliminarCliente.Click
 
         If lstClientes.SelectedIndex = -1 Then
-            MessageBox.Show("Seleccione un cliente")
+
+            MessageBox.Show("Seleccione un cliente.")
             Exit Sub
+
         End If
 
         Dim indice As Integer = lstClientes.SelectedIndex
         Dim cliente As Cliente = clientes(indice)
 
         Dim respuesta As DialogResult =
-            MessageBox.Show("¿Está seguro de eliminar al cliente '" &
-                            cliente.Nombre & " " & cliente.Apellido & "'?",
-                            "Confirmar eliminación",
-                            MessageBoxButtons.YesNo,
-                            MessageBoxIcon.Question)
+        MessageBox.Show(
+            "¿Está seguro de eliminar al cliente '" &
+            cliente.Nombre & " " & cliente.Apellido & "'?",
+            "Confirmar eliminación",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Warning)
 
-        If respuesta = DialogResult.Yes Then
-
-            clientes.RemoveAt(indice)
-            lstClientes.Items.RemoveAt(indice)
-
-            MessageBox.Show("Cliente eliminado correctamente")
-
-            txtNombreCliente.Clear()
-            txtApellidoCliente.Clear()
-            txtDniCliente.Clear()
-            txtTelefonoCliente.Clear()
-            txtEmailCliente.Clear()
-
+        If respuesta <> DialogResult.Yes Then
+            Exit Sub
         End If
+
+        Try
+
+            If ClienteDAO.Eliminar(cliente.IDCliente) Then
+
+                CargarClientesDesdeBD()
+
+                MessageBox.Show(
+                "Cliente eliminado correctamente de MySQL.")
+
+                txtNombreCliente.Clear()
+                txtApellidoCliente.Clear()
+                dtpFechaNacimientoCliente.Checked = False
+                txtTelefonoCliente.Clear()
+                txtEmailCliente.Clear()
+
+            Else
+
+                MessageBox.Show(
+                "No se pudo eliminar el cliente.")
+
+            End If
+
+        Catch ex As MySql.Data.MySqlClient.MySqlException When ex.Number = 1451
+
+            MessageBox.Show(
+            "No se puede eliminar este cliente porque tiene " &
+            "pedidos u otros registros asociados.")
+
+        Catch ex As Exception
+
+            MessageBox.Show(
+            "Error al eliminar cliente: " & ex.Message)
+
+        End Try
+
     End Sub
+
 
 
     ' BOTÓN EDITAR PRODUCTO
@@ -1018,7 +1211,10 @@ Public Class PanelAdm
 
             For Each indiceSabor As Integer In clbSabores.CheckedIndices
 
-                idsSabores.Add(sabores(indiceSabor).IDSabor)
+                Dim opcion As OpcionSabor =
+        CType(clbSabores.Items(indiceSabor), OpcionSabor)
+
+                idsSabores.Add(opcion.Sabor.IDSabor)
 
             Next
 
@@ -1046,10 +1242,14 @@ Public Class PanelAdm
 
                 Dim productoSabor As New ProductoSabor()
 
-                productoSabor.IDProducto = producto.IDProducto
-                productoSabor.IDSabor = sabores(indiceSabor).IDSabor
 
-                ProductoSaborDAO.GuardarSabores(producto.IDProducto, idsSabores)
+
+                Dim opcion As OpcionSabor = CType(clbSabores.Items(indiceSabor), OpcionSabor)
+
+                productoSabor.IDProducto = producto.IDProducto
+                productoSabor.IDSabor = opcion.Sabor.IDSabor
+
+                productosSabores.Add(productoSabor)
 
             Next
 
@@ -1077,9 +1277,9 @@ Public Class PanelAdm
 
     End Sub
 
-
-    'boton eliminar producto
+    REM boton eliminar producto
     Private Sub btnEliminarProducto_Click(sender As Object, e As EventArgs) Handles btnEliminarProducto.Click
+
         If lstProductos.SelectedIndex = -1 Then
             MessageBox.Show("Seleccione un producto")
             Exit Sub
@@ -1096,37 +1296,40 @@ Public Class PanelAdm
             MessageBoxButtons.YesNo,
             MessageBoxIcon.Question)
 
-        If respuesta = DialogResult.Yes Then
+        If respuesta <> DialogResult.Yes Then Exit Sub
 
-            'Eliminar relaciones con sabores
-            For i As Integer = productosSabores.Count - 1 To 0 Step -1
+        Try
+            If ProductoDAO.Eliminar(producto.IDProducto) Then
 
-                If productosSabores(i).IDProducto = producto.IDProducto Then
-                    productosSabores.RemoveAt(i)
-                End If
+                For i As Integer = productosSabores.Count - 1 To 0 Step -1
+                    If productosSabores(i).IDProducto = producto.IDProducto Then
+                        productosSabores.RemoveAt(i)
+                    End If
+                Next
 
-            Next
+                productos.RemoveAt(indice)
+                lstProductos.Items.RemoveAt(indice)
 
-            'Eliminar producto
-            productos.RemoveAt(indice)
+                txtNombreProducto.Clear()
+                txtDescripcion.Clear()
+                txtPrecio.Clear()
 
-            'Eliminarlo de la lista visual
-            lstProductos.Items.RemoveAt(indice)
+                For i As Integer = 0 To clbSabores.Items.Count - 1
+                    clbSabores.SetItemChecked(i, False)
+                Next
 
-            MessageBox.Show("Producto eliminado correctamente")
+                MessageBox.Show("Producto dado de baja correctamente")
 
-            'Limpiar campos
-            txtNombreProducto.Clear()
-            txtDescripcion.Clear()
-            txtPrecio.Clear()
+            Else
+                MessageBox.Show("No se pudo dar de baja el producto.")
+            End If
 
-            For i As Integer = 0 To clbSabores.Items.Count - 1
-                clbSabores.SetItemChecked(i, False)
-            Next
-
-        End If
+        Catch ex As Exception
+            MessageBox.Show("Error al eliminar producto: " & ex.Message)
+        End Try
 
     End Sub
+
 
     REM load
     Private Sub PanelAdm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
@@ -1139,18 +1342,21 @@ Public Class PanelAdm
         CargarProductosDesdeBD()
         productosSabores.Clear()
         productosSabores.AddRange(ProductoSaborDAO.Listar())
+        CargarClientesDesdeBD()
+        dtpFechaNacimientoCliente.MaxDate = Date.Today
+        dtpFechaNacimientoCliente.Checked = False
 
     End Sub
 
     ' ==========================================
     ' CARGAR SABORES DESDE MYSQL
     ' ==========================================
+
     Private Sub CargarSaboresDesdeBD()
 
         Try
 
             sabores.Clear()
-
             sabores.AddRange(SaborDAO.Listar())
 
             lstSabores.Items.Clear()
@@ -1158,12 +1364,19 @@ Public Class PanelAdm
 
             For Each sabor As Sabor In sabores
 
-                lstSabores.Items.Add(
-                sabor.IDSabor & " - " & sabor.NombreSabor)
+                Dim texto As String =
+                sabor.IDSabor & " - " & sabor.NombreSabor
+
+                If Not sabor.Activo Then
+                    texto &= " (Inactivo)"
+                End If
+
+                lstSabores.Items.Add(texto)
 
                 If sabor.Activo Then
 
-                    clbSabores.Items.Add(sabor.NombreSabor)
+                    clbSabores.Items.Add(
+                    New OpcionSabor With {.Sabor = sabor})
 
                 End If
 
@@ -1177,6 +1390,7 @@ Public Class PanelAdm
         End Try
 
     End Sub
+
 
     'boton opcional
     Private Sub btnOpcionales_Click(sender As Object, e As EventArgs) Handles btnOpcionales.Click
@@ -1412,6 +1626,7 @@ Public Class PanelAdm
 
     End Sub
 
+    REM boton ver vista pedido
     Private Sub btnPedidos_Click(sender As Object, e As EventArgs) Handles btnPedidos.Click
 
         Dim frm As New FormPedidos()
@@ -1419,10 +1634,23 @@ Public Class PanelAdm
 
     End Sub
 
+    REM vista como cliente
     Private Sub btnVerCliente_Click(sender As Object, e As EventArgs) Handles btnVerCliente.Click
 
         Dim frm As New FormCliente()
         frm.Show()
 
     End Sub
+
+    REM metodo para auxiliar los check de sabores
+    Private Class OpcionSabor
+
+        Public Property Sabor As Sabor
+
+        Public Overrides Function ToString() As String
+            Return Sabor.NombreSabor
+        End Function
+
+    End Class
+
 End Class

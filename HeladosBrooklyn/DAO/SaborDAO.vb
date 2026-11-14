@@ -76,7 +76,7 @@ Public Class SaborDAO
             Dim sql As String =
                 "SELECT id_sabor, nombre_sabor, stock, " &
                 "activo_sabor, descripcion FROM SABOR " &
-                "WHERE activo = 1 ORDER BY nombre_sabor"
+                "WHERE activo_sabor = 1 ORDER BY nombre_sabor"
 
             Using cmd As New MySqlCommand(sql, conexion)
                 Using reader As MySqlDataReader = cmd.ExecuteReader()

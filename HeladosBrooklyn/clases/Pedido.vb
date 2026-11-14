@@ -19,7 +19,7 @@
 
     Public Sub New()
         Detalles = New List(Of DetallePedido)()
-        estadoPedido = EstadoPedido.Nuevo
+        estadoPedido = EstadoPedido.RECIBIDO
         estadoPago = EstadoPago.Pendiente
         fechaPedido = Date.Now
     End Sub

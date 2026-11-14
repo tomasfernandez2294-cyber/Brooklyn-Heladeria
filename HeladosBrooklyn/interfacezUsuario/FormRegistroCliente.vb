@@ -123,4 +123,11 @@
 
     End Sub
 
+    REM load
+    Private Sub FormRegistroCliente_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+
+        EstiloBrooklyn.Aplicar(Me)
+
+
+    End Sub
 End Class

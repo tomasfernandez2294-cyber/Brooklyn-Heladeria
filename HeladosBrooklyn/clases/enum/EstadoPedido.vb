@@ -1,9 +1,8 @@
 ﻿Public Enum EstadoPedido
-    Nuevo
-    Aceptado
-    EnPreparacion
-    ListoParaRetirar
-    Enviado
-    Terminado
-    Cancelado
+    RECIBIDO
+    CONFIRMADO
+    EN_PREPARACION
+    EN_CAMINO
+    ENTREGADO
+    CANCELADO
 End Enum

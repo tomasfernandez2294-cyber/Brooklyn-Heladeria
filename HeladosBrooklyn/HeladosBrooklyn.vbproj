@@ -95,6 +95,7 @@
     <Compile Include="clases\Direccion.vb" />
     <Compile Include="clases\enum\EstadoPago.vb" />
     <Compile Include="clases\enum\EstadoPedido.vb" />
+    <Compile Include="clases\EstiloBrooklyn.vb" />
     <Compile Include="clases\GestorPedidos.vb" />
     <Compile Include="clases\ItemCarrito.vb" />
     <Compile Include="clases\MetodoEntrega.vb" />

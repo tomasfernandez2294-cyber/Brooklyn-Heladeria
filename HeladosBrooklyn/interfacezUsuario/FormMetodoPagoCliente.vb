@@ -1,5 +1,7 @@
 ﻿Public Class FormMetodoPagoCliente
 
+    Public Property PedidoGuardado As Pedido
+
     Private carritoActual As Carrito
     Private metodoEntregaSeleccionado As MetodoEntrega
 
@@ -79,15 +81,17 @@
 
         nuevoPedido.fechaPedido = Date.Now
 
-        nuevoPedido.estadoPedido = EstadoPedido.Nuevo
+        nuevoPedido.estadoPedido = EstadoPedido.RECIBIDO
         nuevoPedido.estadoPago = EstadoPago.Pendiente
 
         ' Guardar en MySQL
         Try
 
+
             If PedidoDAO.Agregar(nuevoPedido) Then
 
-                GestorPedidos.AgregarPedido(nuevoPedido)
+                ' Asignar solamente si se guardó correctamente
+                PedidoGuardado = nuevoPedido
 
                 MessageBox.Show(
                 "Pedido " & nuevoPedido.NumeroPedido &
@@ -136,5 +140,13 @@
 
         formularioPedidos.Show()
         Me.Hide()
+    End Sub
+
+    REM load
+    Private Sub FormMetodoPagoCliente(sender As Object, e As EventArgs) Handles MyBase.Load
+
+        EstiloBrooklyn.Aplicar(Me)
+
+
     End Sub
 End Class

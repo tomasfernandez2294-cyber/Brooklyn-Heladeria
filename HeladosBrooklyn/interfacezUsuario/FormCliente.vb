@@ -8,6 +8,7 @@
 
         CargarProductosDesdeBD()
         MostrarProductos()
+        EstiloBrooklyn.Aplicar(Me)
 
     End Sub
 

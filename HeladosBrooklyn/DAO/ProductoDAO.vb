@@ -58,7 +58,9 @@ Public Class ProductoDAO
                 "descripcion_producto, orden, precio, " &
                 "activo_producto, imagen, max_marrocote, " &
                 "max_sabores, max_salsas, permitir_notas " &
-                "FROM PRODUCTO ORDER BY orden, nombre_producto"
+                "FROM PRODUCTO " &
+                "WHERE activo_producto = 1 " &
+                "ORDER BY orden, nombre_producto"
 
             Using cmd As New MySqlCommand(sql, conexion)
                 Using reader As MySqlDataReader = cmd.ExecuteReader()

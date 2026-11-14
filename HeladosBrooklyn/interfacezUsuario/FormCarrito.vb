@@ -178,9 +178,7 @@ Public Class FormCarrito
                 If resultado = DialogResult.OK Then
 
                     ' Buscar pedido registrado
-                    pedidoActual =
-                        GestorPedidos.Pedidos.LastOrDefault(
-                            Function(p) p.Carrito Is carritoActual)
+                    pedidoActual = formularioEntrega.PedidoGuardado
 
                     If pedidoActual IsNot Nothing Then
 
@@ -192,7 +190,7 @@ Public Class FormCarrito
                             pedidoActual.NumeroPedido &
                             " registrado correctamente." &
                             vbCrLf &
-                            "Estado: Pendiente")
+                            "Estado: " & pedidoActual.estadoPedido.ToString())
 
                     Else
 
@@ -367,4 +365,12 @@ Public Class FormCarrito
 
     End Sub
 
+
+    REM load
+    Private Sub FormCArrito_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+
+        EstiloBrooklyn.Aplicar(Me)
+
+
+    End Sub
 End Class
