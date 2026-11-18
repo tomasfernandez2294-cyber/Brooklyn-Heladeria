@@ -11,6 +11,7 @@
 
     End Sub
 
+
     Private Sub BtnGuardar_Click(sender As Object, e As EventArgs) Handles BtnGuardar.Click
 
         Try
@@ -18,29 +19,25 @@
             Dim apellido As String = txtApellido.Text.Trim()
 
             Dim telefono As String =
-            ClienteServicio.NormalizarTelefono(
-                txtTelefono.Text)
+            ClienteServicio.NormalizarTelefono(txtTelefono.Text)
 
-            ' VALIDAR DATOS OBLIGATORIOS
-            If Not ClienteServicio.ValidarDatos(
-            nombre, apellido, telefono) Then
+            ' VALIDAR DATOS
+            If Not ClienteServicio.ValidarDatos(nombre, apellido, telefono) Then
 
-                MessageBox.Show(
-                "Complete nombre, apellido y WhatsApp.")
-
+                MessageBox.Show("Complete nombre, apellido y WhatsApp.")
                 Exit Sub
+
             End If
 
-            ' COMPROBAR SI EL CLIENTE EXISTE
+            ' VERIFICAR CLIENTE EXISTENTE
             If Not ClienteServicio.ValidarCliente(telefono) Then
 
-                MessageBox.Show(
-                "Este WhatsApp ya está registrado.")
-
+                MessageBox.Show("Este WhatsApp ya está registrado.")
                 Exit Sub
+
             End If
 
-            ' CREAR OBJETO CLIENTE
+            ' CREAR CLIENTE
             Dim cliente As New Cliente()
 
             cliente.Nombre = nombre
@@ -49,20 +46,62 @@
             cliente.Email = txtEmail.Text.Trim()
 
             If dtpFechaNacimiento.Checked Then
-                cliente.FechaNacimiento =
-                dtpFechaNacimiento.Value.Date
+                cliente.FechaNacimiento = dtpFechaNacimiento.Value.Date
             Else
                 cliente.FechaNacimiento = Nothing
             End If
 
-            ' GUARDAR EN MYSQL
+            ' GUARDAR CLIENTE EN MYSQL
             If ClienteDAO.Agregar(cliente) Then
 
-                MessageBox.Show(
-                "Cliente registrado correctamente." &
-                vbCrLf &
-                "ID generado: " & cliente.IDCliente)
+                ' GENERAR CUPON DE BIENVENIDA
+                Try
+                    Dim cupon As New Cupon()
+
+                    cupon.codigo = CuponServicio.GenerarCodigo()
+                    cupon.tipoDescuento = "PORCENTAJE"
+                    cupon.valor = 10D
+                    cupon.activo = True
+
+                    ' GUARDAR CUPON EN MYSQL
+                    If CuponDAO.Agregar(cupon) Then
+
+                        MessageBox.Show(
+                        "¡Bienvenido a Brooklyn Helados!" &
+                        vbCrLf & vbCrLf &
+                        "Registro realizado correctamente." &
+                        vbCrLf & vbCrLf &
+                        "¡Tenés un 10% de descuento!" &
+                        vbCrLf &
+                        "Tu código es: " & cupon.codigo &
+                        vbCrLf & vbCrLf &
+                        "Ingresalo en el carrito para utilizarlo.",
+                        "Cupón de bienvenida",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information)
+
+                    Else
+
+                        MessageBox.Show(
+                        "Cliente registrado correctamente, " &
+                        "pero no se pudo generar el cupón.")
+
+                    End If
+
+                Catch exCupon As Exception
+
+                    MessageBox.Show(
+                    "Cliente registrado correctamente, " &
+                    "pero ocurrió un error al generar el cupón: " &
+                    exCupon.Message)
+
+                End Try
+
                 Me.Close()
+
+            Else
+
+                MessageBox.Show("No se pudo registrar el cliente.")
 
             End If
 
@@ -77,6 +116,7 @@
         End Try
 
     End Sub
+
 
     Private Sub btnVolver_Click(
         sender As Object,
